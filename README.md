@@ -21,7 +21,6 @@ DocLoop AI is a GitHub Action that leverages large language models (LLMs) to aut
 - [Examples](#examples)
 - [Development](#development)
 - [Testing](#testing)
-- [Publishing](#publishing)
 - [License](#license)
 
 ## Features
@@ -247,28 +246,7 @@ For comprehensive testing instructions, see [TESTING.md](./TESTING.md).
 
 ## Publishing
 
-To publish a new version:
-
-1. **Build and commit the dist folder**:
-
-   ```bash
-   ./scripts/release.sh v1.0.0
-   git push
-   git push origin v1.0.0
-   ```
-
-2. **The release workflow automatically**:
-
-   - Builds the action
-   - Runs tests
-   - Creates a GitHub release with the built files
-
-3. **Users can reference the action**:
-   ```yaml
-   - uses: doorloop/docloop-ai@v1.0.0
-   ```
-
-**Important**: The repository must be public for others to use the action.
+For detailed publishing and deployment instructions, see [PUBLISHING.md](./PUBLISHING.md).
 
 ## License
 
