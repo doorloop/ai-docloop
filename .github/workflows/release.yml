@@ -35,6 +35,9 @@ jobs:
             - name: Run tests
               run: npm test
 
+            - name: Install TypeScript globally
+              run: npm install -g typescript
+
             - name: Semantic Release
               uses: cycjimmy/semantic-release-action@v4.1.0
               with:

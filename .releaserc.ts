@@ -32,3 +32,4 @@ const config: Options = {
 };
 
 export default config;
+
