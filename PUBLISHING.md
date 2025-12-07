@@ -43,23 +43,13 @@ The interactive release script will:
 - Create a git tag
 - Provide next steps for pushing
 
-**Option B: Using the bash release script**:
-
-```bash
-./scripts/release.sh v1.0.0
-git push
-git push origin v1.0.0
-```
-
-**Option C: Non-interactive mode** (for CI/CD):
+**Option B: Non-interactive mode** (for CI/CD):
 
 ```bash
 npm run release 1.0.1
-# or
-tsx scripts/release.ts 1.0.1
 ```
 
-**Option B: Manual process**:
+**Option C: Manual process**:
 
 ```bash
 # Build the action
@@ -124,16 +114,19 @@ Follow [Semantic Versioning](https://semver.org/) (SemVer):
 
 ```bash
 # Bug fix release
-npm version patch  # 1.0.0 -> 1.0.1
-./scripts/release.sh v1.0.1
+npm run release
+# Select "Patch" when prompted, or:
+npm run release 1.0.1
 
 # New feature release
-npm version minor  # 1.0.0 -> 1.1.0
-./scripts/release.sh v1.1.0
+npm run release
+# Select "Minor" when prompted, or:
+npm run release 1.1.0
 
 # Breaking change release
-npm version major  # 1.0.0 -> 2.0.0
-./scripts/release.sh v2.0.0
+npm run release
+# Select "Major" when prompted, or:
+npm run release 2.0.0
 ```
 
 ## Release Checklist

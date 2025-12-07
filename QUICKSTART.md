@@ -8,15 +8,35 @@
 
 ### Step 2: Create a Release
 
-**Option A: Using the release script** (recommended):
+**Option A: Using the interactive release script** (recommended):
 
 ```bash
-./scripts/release.sh v1.0.0
+npm run release
+```
+
+Follow the interactive prompts to select version type and confirm the release. The script will automatically:
+
+- Run type checking and tests
+- Build the action
+- Update package.json version
+- Commit changes and create a tag
+
+Then push the changes:
+
+```bash
 git push
 git push origin v1.0.0
 ```
 
-**Option B: Manual process**:
+**Option B: Non-interactive mode**:
+
+```bash
+npm run release 1.0.0
+git push
+git push origin v1.0.0
+```
+
+**Option C: Manual process**:
 
 ```bash
 # Build the action
