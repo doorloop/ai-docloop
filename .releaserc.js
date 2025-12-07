@@ -1,6 +1,4 @@
-import type { Options } from 'semantic-release';
-
-const config: Options = {
+const config = {
 	branches: ['main'],
 	repositoryUrl: 'git+https://github.com/doorloop/docloop-ai',
 	plugins: [
@@ -31,5 +29,4 @@ const config: Options = {
 	],
 };
 
-export default config;
-
+module.exports = config;
