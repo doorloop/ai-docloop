@@ -11,6 +11,7 @@
     "test:coverage": "jest --coverage",
     "test:local": "tsx scripts/test-local.ts",
     "act:test": "act pull_request -W .github/workflows/test-local.yml --secret-file .secrets --container-architecture linux/amd64 -s GITHUB_TOKEN=$GITHUB_TOKEN",
+    "release": "tsx scripts/release/index.ts",
     "prepare": "npm run build"
   },
   "keywords": [
@@ -37,7 +38,9 @@
     "ts-jest": "^29.1.2",
     "tsup": "^8.0.1",
     "tsx": "^4.7.0",
-    "typescript": "^5.3.3"
+    "typescript": "^5.3.3",
+    "inquirer": "^9.2.12",
+    "@types/inquirer": "^9.0.3"
   },
   "engines": {
     "node": ">=20.0.0"

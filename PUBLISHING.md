@@ -13,6 +13,7 @@ This guide covers how to publish new versions of the DocLoop AI GitHub Action.
 ### Step 1: Prepare Your Repository
 
 1. **Ensure repository is public**:
+
    - Go to repository settings on GitHub
    - Verify the repository visibility is set to "Public"
 
@@ -25,7 +26,24 @@ This guide covers how to publish new versions of the DocLoop AI GitHub Action.
 
 ### Step 2: Create a Release
 
-**Option A: Using the release script** (recommended):
+**Option A: Using the interactive release script** (recommended):
+
+```bash
+npm run release
+```
+
+The interactive release script will:
+
+- Prompt you to select version type (patch/minor/major) or enter custom version
+- Run type checking (`npm run typecheck`)
+- Run tests (`npm test`)
+- Build the action (`npm run build`)
+- Update `package.json` version
+- Stage and commit the `dist/` directory and `package.json`
+- Create a git tag
+- Provide next steps for pushing
+
+**Option B: Using the bash release script**:
 
 ```bash
 ./scripts/release.sh v1.0.0
@@ -33,11 +51,13 @@ git push
 git push origin v1.0.0
 ```
 
-The release script will:
-- Build the action (`npm run build`)
-- Run tests (`npm test`)
-- Stage and commit the `dist/` directory
-- Create a git tag
+**Option C: Non-interactive mode** (for CI/CD):
+
+```bash
+npm run release 1.0.1
+# or
+tsx scripts/release.ts 1.0.1
+```
 
 **Option B: Manual process**:
 
@@ -89,7 +109,7 @@ Once published, users can reference your action in their workflows:
 Or use a major version tag for automatic updates:
 
 ```yaml
-- uses: doorloop/docloop-ai@v1  # Automatically uses latest v1.x.x
+- uses: doorloop/docloop-ai@v1 # Automatically uses latest v1.x.x
 ```
 
 ## Versioning Strategy
@@ -176,4 +196,3 @@ git push
 - [TESTING.md](./TESTING.md) - Testing instructions
 - [README.md](./README.md) - Main documentation
 - [QUICKSTART.md](./QUICKSTART.md) - Quick start guide
-

@@ -21,7 +21,7 @@ jobs:
           fetch-depth: 0
 
       - name: Run DocLoop AI
-        uses: doorloop/docloop-ai@v1.0.0 # Update to your latest version
+        uses: doorloop/docloop-ai@v1.0.0
         with:
           base_branches: main,develop
           path_scopes: |
