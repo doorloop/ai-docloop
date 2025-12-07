@@ -5,7 +5,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue.svg)](https://www.typescriptlang.org/)
 
-DocLoop AI is a GitHub Action that leverages OpenAI's GPT models to automatically generate and maintain README documentation for your codebase. It analyzes changes in merged pull requests and creates or updates README files in the affected directories, making documentation maintenance effortless.
+DocLoop AI is a GitHub Action that leverages large language models (LLMs) to automatically generate and maintain README documentation for your codebase. It analyzes changes in merged pull requests and creates or updates README files in the affected directories, making documentation maintenance effortless.
 
 ## Table of Contents
 
@@ -25,7 +25,7 @@ DocLoop AI is a GitHub Action that leverages OpenAI's GPT models to automaticall
 
 ## Features
 
-- **AI-Powered Documentation**: Automatically generates or updates README files using OpenAI's GPT models (supports all OpenAI models including gpt-4o-mini, gpt-4o, and gpt-4-turbo)
+- **AI-Powered Documentation**: Automatically generates or updates README files using large language models (supports all OpenAI models including gpt-4o-mini, gpt-4o, and gpt-4-turbo)
 - **Monorepo Support**: Configure multiple path scopes to handle complex monorepo architectures
 - **Smart Update Modes**: Choose between updating existing READMEs or overwriting them completely
 - **Configurable Detail Levels**: Control the depth and detail of generated documentation (low, medium, high)
