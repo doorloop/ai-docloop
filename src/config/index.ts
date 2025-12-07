@@ -1,0 +1,2 @@
+export { getConfig } from './parser';
+

@@ -1,0 +1,38 @@
+# Example workflow showing how to use DocLoop AI in your repository
+# Copy this to your repository's .github/workflows/ directory
+
+name: Update READMEs
+
+on:
+  pull_request:
+    types: [closed]
+
+jobs:
+  update-readmes:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Run DocLoop AI
+        uses: doorloop/docloop-ai@v1.0.0 # Update to your latest version
+        with:
+          base_branches: main,develop
+          path_scopes: |
+            src/features/**
+            packages/**
+          doc_root_depth_from_scope: 1
+          readme_filename: README.md
+          detail_level: medium
+          openai_model: gpt-4o-mini
+          openai_api_key: ${{ secrets.OPENAI_API_KEY }}
+          update_mode: update
+          commit_message: "docs: update READMEs [skip ci]"
+          create_pr: false # Set to true to create PRs instead of direct commits
+

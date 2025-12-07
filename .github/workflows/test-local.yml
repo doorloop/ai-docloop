@@ -1,0 +1,35 @@
+name: Test Local (for act)
+
+on:
+  pull_request:
+    types: [closed]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Setup Node.js and build
+        run: |
+          # Check Node version (act's ubuntu image may have Node 18, but npm install should still work)
+          node --version || echo "Node not found"
+          # Use npm install instead of npm ci for local testing (more forgiving)
+          npm install
+          npm run build
+
+      - name: Run DocLoop AI
+        uses: ./
+        with:
+          base_branches: main
+          path_scopes: src/**
+          doc_root_depth_from_scope: 1
+          openai_api_key: ${{ secrets.OPENAI_API_KEY }}
+          create_pr: false

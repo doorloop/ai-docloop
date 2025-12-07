@@ -1,0 +1,12 @@
+# Act configuration for local GitHub Actions testing
+# Install act: https://github.com/nektos/act
+
+# Use a specific platform image (optional, defaults to ubuntu-latest)
+-P ubuntu-latest=catthehacker/ubuntu:act-latest
+
+# Use secrets file (create .secrets file with your secrets)
+--secret-file .secrets
+
+# Enable verbose output
+-v
+
