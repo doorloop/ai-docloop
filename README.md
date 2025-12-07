@@ -4,6 +4,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue.svg)](https://www.typescriptlang.org/)
+[![Version](https://img.shields.io/github/v/tag/doorloop/docloop-ai)](https://github.com/doorloop/docloop-ai/releases)
 
 DocLoop AI is a GitHub Action that leverages large language models (LLMs) to automatically generate and maintain README documentation for your codebase. It analyzes changes in merged pull requests and creates or updates README files in the affected directories, making documentation maintenance effortless.
 
