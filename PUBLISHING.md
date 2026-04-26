@@ -1,190 +1,95 @@
 # Publishing Guide
 
-This guide covers how to publish new versions of the DocLoop AI GitHub Action.
+This repo publishes new versions of the DocLoop AI GitHub Action automatically via [`semantic-release`](https://semantic-release.gitbook.io/) on every push to `main`. There is no manual `npm/bun run release` flow — releases are entirely commit-driven.
 
-## Prerequisites
+## How a release happens
 
-- Repository must be **public** (required for others to use the action)
-- Write access to the repository
-- Git configured with proper credentials
+1. You merge a PR into `main`.
+2. `.github/workflows/release.yml` runs:
+    - `bun install --frozen-lockfile`
+    - `bun run build` (rebuilds `dist/index.js`)
+    - `bun run typecheck`
+    - `bun run test`
+    - `semantic-release` analyzes commits since the last tag, decides the next version, updates `CHANGELOG.md`, bumps `package.json`, commits the rebuilt `dist/`, creates the git tag (e.g. `v1.7.0`), and creates the GitHub Release with auto-generated notes.
+    - The major-version tag (`v1`) is force-updated to point at the new release.
+3. Consumers using `uses: doorloop/ai-docloop@v1` automatically pick up the new version.
 
-## Publishing a New Version
+## What controls the version bump
 
-### Step 1: Prepare Your Repository
+`.releaserc.js` maps commit-message types to release types. The current rules:
 
-1. **Ensure repository is public**:
-    - Go to repository settings on GitHub
-    - Verify the repository visibility is set to "Public"
+| Commit type | Release impact |
+| ----------- | -------------- |
+| `chore:`    | minor          |
+| `feat:`     | minor          |
+| `fix:`      | patch          |
+| `perf:`     | patch          |
+| `breaking:` | major          |
 
-2. **Update version in package.json** (if needed):
-    ```bash
-    npm version patch   # for bug fixes (1.0.0 -> 1.0.1)
-    npm version minor   # for new features (1.0.0 -> 1.1.0)
-    npm version major   # for breaking changes (1.0.0 -> 2.0.0)
-    ```
+Other conventional types (`docs`, `refactor`, `test`, `style`, `build`, `ci`, `revert`) are accepted by commitlint locally but **do not trigger a release**. If your only commits since the last tag are those types, no new version is published.
 
-### Step 2: Create a Release
+`commit-msg` (Husky + commitlint) rejects non-conventional messages locally so you can't accidentally push a commit that won't trigger a release.
 
-**Option A: Using the interactive release script** (recommended):
-
-```bash
-npm run release
-```
-
-The interactive release script will:
-
-- Prompt you to select version type (patch/minor/major) or enter custom version
-- Run type checking (`npm run typecheck`)
-- Run tests (`npm test`)
-- Build the action (`npm run build`)
-- Update `package.json` version
-- Stage and commit the `dist/` directory and `package.json`
-- Create a git tag
-- Provide next steps for pushing
-
-**Option B: Non-interactive mode** (for CI/CD):
+## Day-to-day flow
 
 ```bash
-npm run release 1.0.1
+# Make changes
+git checkout -b feat/my-change
+
+# Commit using a release-triggering type
+git commit -m "feat: support gpt-5 model"
+
+# Open PR; merge when reviewed
+gh pr create
+
+# After merge: nothing else to do. CI handles the release.
 ```
 
-**Option C: Manual process**:
+## Manually re-running a failed release
 
-```bash
-# Build the action
-npm run build
+If `release.yml` fails for transient reasons (network, GitHub API hiccup), you can re-run the failed workflow run from the Actions tab. semantic-release is idempotent — it skips work that's already done and picks up where it left off.
 
-# Commit the built files (GitHub Actions needs dist/ in the repository)
-git add -f dist/
-git commit -m "chore: build action for release"
-git push
+If `bun install --frozen-lockfile` fails because `bun.lock` and `package.json` drifted, run `bun install` locally, commit the updated lockfile, and push.
 
-# Create and push tag
-git tag v1.0.0
-git push origin v1.0.0
-```
+## Marketplace publishing
 
-**Important**: The `dist/` folder must be committed to the repository for the action to work when others reference it. The release script handles this automatically.
+GitHub Releases are created automatically by semantic-release. To list a release on the GitHub Marketplace:
 
-### Step 3: Automatic Release Workflow
+1. Open the release on GitHub → **Edit**.
+2. Tick **"Publish this release to the GitHub Marketplace"**.
+3. Pick categories (suggested: `Utilities` + `Continuous integration`).
+4. **Update release**.
 
-When you push a tag (e.g., `v1.0.0`), the release workflow (`.github/workflows/release.yml`) automatically:
+This is a one-time-per-release manual step; semantic-release does not toggle the Marketplace checkbox. The `doorloop` org admin must accept the GitHub Marketplace Developer Agreement once before this option appears.
 
-- Builds the action (`npm run build`)
-- Runs type checking (`npm run typecheck`)
-- Runs tests (`npm test`)
-- Creates a GitHub release with:
-    - Built files (`dist/**`)
-    - `action.yml`
-    - `README.md`
-    - `LICENSE`
-    - Auto-generated release notes
+## Versioning convention
 
-### Step 4: Verify the Release
+Standard [Semantic Versioning](https://semver.org/):
 
-1. Go to your repository on GitHub
-2. Click "Releases" in the sidebar
-3. Verify your new release appears with the built files attached
-4. Check that the release notes were generated correctly
-
-### Step 5: Using the Published Action
-
-Once published, users can reference your action in their workflows:
-
-```yaml
-- uses: doorloop/docloop-ai@v1.0.0
-```
-
-Or use a major version tag for automatic updates:
-
-```yaml
-- uses: doorloop/docloop-ai@v1 # Automatically uses latest v1.x.x
-```
-
-## Versioning Strategy
-
-Follow [Semantic Versioning](https://semver.org/) (SemVer):
-
-- **MAJOR** version (X.0.0): Breaking changes
-- **MINOR** version (0.X.0): New features (backward compatible)
-- **PATCH** version (0.0.X): Bug fixes (backward compatible)
-
-### Examples
-
-```bash
-# Bug fix release
-npm run release
-# Select "Patch" when prompted, or:
-npm run release 1.0.1
-
-# New feature release
-npm run release
-# Select "Minor" when prompted, or:
-npm run release 1.1.0
-
-# Breaking change release
-npm run release
-# Select "Major" when prompted, or:
-npm run release 2.0.0
-```
-
-## Release Checklist
-
-Before publishing a new version:
-
-- [ ] All tests pass (`npm test`)
-- [ ] Type checking passes (`npm run typecheck`)
-- [ ] Code is built successfully (`npm run build`)
-- [ ] Version updated in `package.json`
-- [ ] `dist/` folder is committed
-- [ ] Git tag created and pushed
-- [ ] Release workflow completed successfully
-- [ ] Release notes reviewed on GitHub
+- **MAJOR** (`X.0.0`) — breaking changes (use `breaking:` commit type).
+- **MINOR** (`0.X.0`) — new features (use `feat:` or `chore:`).
+- **PATCH** (`0.0.X`) — bug fixes (use `fix:` or `perf:`).
 
 ## Troubleshooting
 
-### Release Workflow Fails
+### My merge didn't produce a release
 
-- **Check build output**: Ensure `dist/index.js` exists after building
-- **Verify tests**: Run `npm test` locally to catch issues early
-- **Check action.yml**: Ensure `action.yml` is in the root directory
-- **Review workflow logs**: Check GitHub Actions logs for specific errors
+Check the merged commits since the last tag. If they're all `docs:` / `refactor:` / `test:` / etc., that's expected — those types don't trigger releases. Add a `chore:` commit if you want a release.
 
-### Action Not Found After Release
+### `release.yml` failed at "Run tests" / "Build action"
 
-- **Repository visibility**: Ensure repository is public
-- **Tag exists**: Verify tag was pushed: `git ls-remote --tags origin`
-- **Release created**: Check that GitHub release was created successfully
-- **Tag format**: Ensure tag follows `v*` pattern (e.g., `v1.0.0`)
+Failure here usually means the new code broke. Fix the issue in a follow-up PR; semantic-release will pick up both commits at the next release.
 
-### Users Can't Find Latest Version
+### Tag didn't move to `v$MAJOR`
 
-- **Check tag**: Verify latest tag exists and is pushed
-- **Release workflow**: Ensure release workflow completed successfully
-- **Version badge**: The README version badge should update automatically via shields.io
+Check the "Update major version tag" step in `release.yml`. It runs only when `steps.semantic.outputs.new_release_published == 'true'` — if no release was cut (see above), the major tag also doesn't move.
 
-### Dist Folder Not Committed
+### Branch protection rejected the release commit
 
-If the `dist/` folder is not committed, users won't be able to use the action:
-
-```bash
-# Manually commit dist/ if needed
-git add -f dist/
-git commit -m "chore: build action for release"
-git push
-```
-
-## Best Practices
-
-1. **Always test before releasing**: Run `npm test` and `npm run build` locally
-2. **Use the release script**: It automates the process and reduces errors
-3. **Follow semantic versioning**: Helps users understand the impact of updates
-4. **Write clear release notes**: Describe what changed in each version
-5. **Tag consistently**: Always use `v` prefix (e.g., `v1.0.0`)
-6. **Keep dist/ committed**: Required for GitHub Actions to work
+The GitHub Actions bot needs to be allowed to push to `main`. Either disable required reviews on `main` for this bot, or add a bypass rule.
 
 ## Related Documentation
 
-- [TESTING.md](./TESTING.md) - Testing instructions
-- [README.md](./README.md) - Main documentation
-- [QUICKSTART.md](./QUICKSTART.md) - Quick start guide
+- [TESTING.md](./TESTING.md) — local testing setup.
+- [README.md](./README.md) — main documentation and consumer-facing usage.
+- [QUICKSTART.md](./QUICKSTART.md) — quick start for using the action in another repo.

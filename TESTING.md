@@ -39,14 +39,14 @@ This guide covers different ways to test the DocLoop AI GitHub Action.
 
 4. **Build the action**:
     ```bash
-    npm run build
+    bun run build
     ```
 
 #### Running Tests
 
 ```bash
 # Test with a specific PR event
-npm run act:test
+bun run act:test
 
 # Or manually with act
 act pull_request -W .github/workflows/test-local.yml --secret-file .secrets
@@ -88,13 +88,13 @@ For quick iteration during development, you can test individual functions:
 
 ```bash
 # Run unit tests
-npm test
+bun test
 
 # Run tests in watch mode
-npm run test:watch
+bun test --watch
 
 # Run with coverage
-npm run test:coverage
+bun test --coverage
 ```
 
 ### Option 3: Manual Testing Script
@@ -103,10 +103,10 @@ The `test-local.ts` script allows you to test the action with mocked GitHub cont
 
 ```bash
 # Build first
-npm run build
+bun run build
 
 # Run with required parameters
-npm run test:local -- \
+bun run test:local -- \
   --repo owner/repo-name \
   --pr-number 123 \
   --base-branch main \
@@ -120,22 +120,7 @@ npm run test:local -- \
 
 ### Step 1: Publish Your Action
 
-1. **Create a release**:
-
-    ```bash
-    # Make sure everything is committed
-    git add .
-    git commit -m "chore: prepare for release"
-
-    # Create and push a tag (this triggers the release workflow)
-    git tag v1.0.0
-    git push origin v1.0.0
-    ```
-
-2. **Verify the release**:
-    - Go to your GitHub repository
-    - Check the "Releases" section
-    - The release workflow should have created a release with the built action files
+Releases are automatic via semantic-release on every push to `main`. See [PUBLISHING.md](./PUBLISHING.md).
 
 ### Step 2: Use in Another Repository
 
@@ -162,7 +147,7 @@ jobs:
                   fetch-depth: 0
 
             - name: Run DocLoop AI
-              uses: doorloop/docloop-ai@v1.0.0 # Use your published version
+              uses: doorloop/ai-docloop@v1 # Tracks the latest v1.x.y
               with:
                   base_branches: main
                   path_scopes: src/features/**

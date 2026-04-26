@@ -1,72 +1,8 @@
 # Quick Start Guide
 
-## Publishing Your Action
+## Using DocLoop AI in your repository
 
-### Step 1: Prepare Your Repository
-
-1. **Make sure your repository is public** (required for others to use your action)
-
-### Step 2: Create a Release
-
-**Option A: Using the interactive release script** (recommended):
-
-```bash
-npm run release
-```
-
-Follow the interactive prompts to select version type and confirm the release. The script will automatically:
-
-- Run type checking and tests
-- Build the action
-- Update package.json version
-- Commit changes and create a tag
-
-Then push the changes:
-
-```bash
-git push
-git push origin v1.0.0
-```
-
-**Option B: Non-interactive mode**:
-
-```bash
-npm run release 1.0.0
-git push
-git push origin v1.0.0
-```
-
-**Option C: Manual process**:
-
-```bash
-# Build the action
-npm run build
-
-# Commit the built files (GitHub Actions needs dist/ in the repository)
-git add -f dist/
-git commit -m "chore: build action for release"
-git push
-
-# Create and push tag
-git tag v1.0.0
-git push origin v1.0.0
-```
-
-**Note**: The `dist/` folder must be committed to the repository for the action to work when others reference it. The release script handles this automatically.
-
-2. **The release workflow will automatically**:
-    - Build your action (`npm run build`)
-    - Run tests (`npm test`)
-    - Create a GitHub release with the built files
-
-3. **Verify the release**:
-    - Go to your repository on GitHub
-    - Click "Releases" in the sidebar
-    - You should see your new release with the built files attached
-
-### Step 3: Use in Another Repository
-
-Create a workflow file (e.g., `.github/workflows/docloop.yml`) in your test repository:
+Create a workflow file (e.g., `.github/workflows/docloop.yml`) in the repo whose READMEs you want maintained:
 
 ```yaml
 name: Update READMEs
@@ -77,93 +13,113 @@ on:
 
 jobs:
     update-readmes:
+        if: github.event.pull_request.merged == true
         runs-on: ubuntu-latest
         permissions:
             contents: write
             pull-requests: write
         steps:
-            - name: Checkout code
-              uses: actions/checkout@v4
+            - uses: actions/checkout@v4
               with:
                   token: ${{ secrets.GITHUB_TOKEN }}
                   fetch-depth: 0
 
-            - name: Run DocLoop AI
-              uses: YOUR_USERNAME/docloop-ai@v1.0.0 # Replace with your username/repo
+            - uses: doorloop/ai-docloop@v1
               with:
                   base_branches: main
                   path_scopes: src/features/**
                   openai_api_key: ${{ secrets.OPENAI_API_KEY }}
 ```
 
-**Important**: Replace `YOUR_USERNAME` with your GitHub username or organization name.
+Add an `OPENAI_API_KEY` repository secret (Settings → Secrets and variables → Actions). On the next merged PR that touches files under `path_scopes`, the action will generate or update the README in the affected directories.
 
-## Testing Locally
+See [README.md](./README.md#inputs) for the full input reference and monorepo examples.
 
-### Using `act` (Recommended)
+## Contributing to this repo
 
-1. **Install act**:
+### Prerequisites
+
+- [Bun](https://bun.sh) ≥ 1.1
+- Node 20 (only if you want to run the local `act` test flow; CI handles releases without it)
+
+### Setup
+
+```bash
+bun install
+```
+
+This installs dependencies and activates the Husky git hooks (`pre-commit` runs lint-staged + knip; `commit-msg` runs commitlint).
+
+### Common commands
+
+```bash
+bun run build          # Bundle src/ into dist/index.js with tsup
+bun run typecheck      # tsc --noEmit
+bun test               # Run the full test suite (Bun's built-in runner)
+bun test --coverage    # With coverage report (writes coverage/lcov.info)
+bun run lint           # oxlint
+bun run lint:fix       # oxlint with autofixes
+bun run format         # oxfmt --write across the repo
+bun run format:check   # oxfmt --check (CI-style)
+bun run knip           # Detect unused exports/files/dependencies
+```
+
+### Releases
+
+This repo uses [semantic-release](./PUBLISHING.md). Just merge PRs with conventional-commit messages (`feat:`, `fix:`, `chore:`, `perf:`, `breaking:`) and a new version is published automatically.
+
+## Testing the action locally with `act`
+
+If you want to actually run the action against a fake PR event without pushing to GitHub:
+
+1. Install `act`:
 
     ```bash
     brew install act  # macOS
-    # Or: https://github.com/nektos/act/releases
     ```
 
-2. **Install Docker** (required for act)
-
-3. **Setup secrets** (run from project root: `/path/to/ai-docloop/`):
+2. Set up secrets (run from project root):
 
     ```bash
     cp .secrets.example .secrets
-    # Edit .secrets and add:
-    # GITHUB_TOKEN=your_token_here
-    # OPENAI_API_KEY=your_key_here
+    # Edit .secrets with:
+    # GITHUB_TOKEN=your_personal_access_token  (repo scope)
+    # OPENAI_API_KEY=your_openai_key
     ```
 
-    **Getting your tokens**:
-    - **GITHUB_TOKEN**: Create a [Personal Access Token](https://github.com/settings/tokens) with `repo` scope
-    - **OPENAI_API_KEY**: Get from [OpenAI API Keys](https://platform.openai.com/api-keys)
+3. Build and run:
 
-4. **Build and test**:
     ```bash
-    npm run build
-    npm run act:test
+    bun run build
+    bun run act:test
     ```
 
-### Quick Test Script
+The `bun run test:local` helper script can pre-create the GitHub event JSON for `act` to consume:
 
 ```bash
-npm run test:local -- \
-  --repo owner/repo-name \
-  --pr-number 123 \
-  --base-branch main \
-  --path-scopes "src/features/**"
+bun run test:local -- --repo owner/repo --pr-number 123 --base-branch main
 ```
-
-This creates the necessary event files for `act` but doesn't actually run the action (use `act` for that).
 
 ## Troubleshooting
 
-### Action Not Found
+### Action not found by consumers
 
-- Make sure your repository is **public**
-- Verify the tag exists: `git ls-remote --tags origin`
-- Check that the release workflow completed successfully
+- Confirm this repo is public.
+- Confirm the tag exists on the remote: `git ls-remote --tags origin`.
+- Check the latest run of `Semantic Release` in the Actions tab — if it didn't publish a release, see [PUBLISHING.md](./PUBLISHING.md#my-merge-didnt-produce-a-release).
 
-### Release Workflow Fails
+### Local hooks not firing
 
-- Check that `dist/index.js` exists after building
-- Verify all tests pass: `npm test`
-- Ensure `action.yml` is in the root directory
+`bun install` should have run `husky` via the `prepare` script. If hooks aren't firing, run `bunx husky` manually to re-activate.
 
-### Local Testing Issues
+### `act` errors
 
-- **Docker not running**: Start Docker Desktop
-- **act not found**: Install act first
-- **Permission errors**: Make sure your GitHub token has `repo` scope
+- Docker must be running.
+- The `linux/amd64` flag in the `act:test` script is required on Apple Silicon.
 
 ## Next Steps
 
-- Read [TESTING.md](./TESTING.md) for detailed testing instructions
-- Check [README.md](./README.md) for full documentation
-- See `.github/workflows/example-usage.yml` for a complete example
+- [README.md](./README.md) — full input reference and monorepo examples.
+- [TESTING.md](./TESTING.md) — detailed `act` setup.
+- [PUBLISHING.md](./PUBLISHING.md) — how releases work.
+- `.github/workflows/example-usage.yml` — a complete consumer-side workflow example.
