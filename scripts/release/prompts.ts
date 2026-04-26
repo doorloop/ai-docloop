@@ -80,7 +80,7 @@ export const promptUserForRelease = async (): Promise<ReleaseAnswers | null> => 
 			runTests: true,
 			runTypeCheck: true,
 		};
-	} catch (error) {
+	} catch {
 		return null;
 	}
 };

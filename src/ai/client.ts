@@ -45,14 +45,14 @@ export async function generateReadme(ctx: AiRequestContext, cfg: ActionConfig): 
 		try {
 			readme = JSON.parse(content) as ReadmeStructure;
 		} catch (parseError) {
-			throw new Error(`Failed to parse structured output: ${parseError}`);
+			throw new Error(`Failed to parse structured output: ${parseError}`, { cause: parseError });
 		}
 
 		// Convert structured data to markdown
 		return formatReadmeToMarkdown(readme);
 	} catch (error) {
 		if (error instanceof OpenAI.APIError) {
-			throw new Error(`OpenAI API error (${error.status}): ${error.message}`);
+			throw new Error(`OpenAI API error (${error.status}): ${error.message}`, { cause: error });
 		}
 		throw error;
 	}

@@ -21,6 +21,8 @@
 		"act:test": "act pull_request -W .github/workflows/test-local.yml --secret-file .secrets --container-architecture linux/amd64 -s GITHUB_TOKEN=$GITHUB_TOKEN",
 		"format": "oxfmt --ignore-path .oxfmtignore --write .",
 		"format:check": "oxfmt --ignore-path .oxfmtignore --check .",
+		"lint": "oxlint",
+		"lint:fix": "oxlint --fix",
 		"release": "bun scripts/release/index.ts",
 		"prepare": "bun run build"
 	},
@@ -39,6 +41,7 @@
 		"inquirer": "^9.2.12",
 		"jest": "^29.7.0",
 		"oxfmt": "^0.46.0",
+		"oxlint": "^1.61.0",
 		"semantic-release": "^23.0.0",
 		"ts-jest": "^29.1.2",
 		"tsup": "^8.0.1",

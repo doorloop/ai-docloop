@@ -16,8 +16,7 @@ export async function buildDocRoots(docRootMap: Map<string, string[]>, readmeFil
 		try {
 			existingReadme = await fs.readFile(readmePath, 'utf-8');
 			logger.debug(`Found existing README at ${readmePath}`);
-		} catch (error) {
-			// File doesn't exist, which is fine
+		} catch {
 			logger.debug(`No existing README at ${readmePath}, will create new one`);
 		}
 
