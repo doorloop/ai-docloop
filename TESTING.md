@@ -12,37 +12,35 @@ This guide covers different ways to test the DocLoop AI GitHub Action.
 
 1. **Install act**:
 
-   ```bash
-   # macOS
-   brew install act
+    ```bash
+    # macOS
+    brew install act
 
-   # Linux (using Homebrew)
-   brew install act
+    # Linux (using Homebrew)
+    brew install act
 
-   # Or download from: https://github.com/nektos/act/releases
-   ```
+    # Or download from: https://github.com/nektos/act/releases
+    ```
 
 2. **Install Docker** (required for act):
-
-   - macOS: [Docker Desktop](https://www.docker.com/products/docker-desktop)
-   - Linux: Follow [Docker installation guide](https://docs.docker.com/engine/install/)
+    - macOS: [Docker Desktop](https://www.docker.com/products/docker-desktop)
+    - Linux: Follow [Docker installation guide](https://docs.docker.com/engine/install/)
 
 3. **Create secrets file** (run from project root: `/path/to/ai-docloop/`):
 
-   ```bash
-   cp .secrets.example .secrets
-   # Edit .secrets and add your tokens
-   ```
+    ```bash
+    cp .secrets.example .secrets
+    # Edit .secrets and add your tokens
+    ```
 
-   **Getting your tokens**:
-
-   - **GITHUB_TOKEN**: Create a [Personal Access Token](https://github.com/settings/tokens) with `repo` scope
-   - **OPENAI_API_KEY**: Get from [OpenAI API Keys](https://platform.openai.com/api-keys)
+    **Getting your tokens**:
+    - **GITHUB_TOKEN**: Create a [Personal Access Token](https://github.com/settings/tokens) with `repo` scope
+    - **OPENAI_API_KEY**: Get from [OpenAI API Keys](https://platform.openai.com/api-keys)
 
 4. **Build the action**:
-   ```bash
-   npm run build
-   ```
+    ```bash
+    npm run build
+    ```
 
 #### Running Tests
 
@@ -65,22 +63,22 @@ You can create event JSON files in `.github/events/` to simulate different PR sc
 
 ```json
 {
-  "action": "closed",
-  "pull_request": {
-    "number": 123,
-    "merged": true,
-    "base": {
-      "ref": "main"
-    },
-    "head": {
-      "ref": "feature-branch"
-    },
-    "title": "Add new feature",
-    "body": "This PR adds a new feature"
-  },
-  "repository": {
-    "full_name": "your-org/your-repo"
-  }
+	"action": "closed",
+	"pull_request": {
+		"number": 123,
+		"merged": true,
+		"base": {
+			"ref": "main"
+		},
+		"head": {
+			"ref": "feature-branch"
+		},
+		"title": "Add new feature",
+		"body": "This PR adds a new feature"
+	},
+	"repository": {
+		"full_name": "your-org/your-repo"
+	}
 }
 ```
 
@@ -124,20 +122,20 @@ npm run test:local -- \
 
 1. **Create a release**:
 
-   ```bash
-   # Make sure everything is committed
-   git add .
-   git commit -m "chore: prepare for release"
+    ```bash
+    # Make sure everything is committed
+    git add .
+    git commit -m "chore: prepare for release"
 
-   # Create and push a tag (this triggers the release workflow)
-   git tag v1.0.0
-   git push origin v1.0.0
-   ```
+    # Create and push a tag (this triggers the release workflow)
+    git tag v1.0.0
+    git push origin v1.0.0
+    ```
 
 2. **Verify the release**:
-   - Go to your GitHub repository
-   - Check the "Releases" section
-   - The release workflow should have created a release with the built action files
+    - Go to your GitHub repository
+    - Check the "Releases" section
+    - The release workflow should have created a release with the built action files
 
 ### Step 2: Use in Another Repository
 
@@ -147,30 +145,30 @@ Create a workflow file (e.g., `.github/workflows/docloop.yml`) in your test repo
 name: Update READMEs
 
 on:
-  pull_request:
-    types: [closed]
+    pull_request:
+        types: [closed]
 
 jobs:
-  update-readmes:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      pull-requests: write
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          fetch-depth: 0
+    update-readmes:
+        runs-on: ubuntu-latest
+        permissions:
+            contents: write
+            pull-requests: write
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+              with:
+                  token: ${{ secrets.GITHUB_TOKEN }}
+                  fetch-depth: 0
 
-      - name: Run DocLoop AI
-        uses: doorloop/docloop-ai@v1.0.0 # Use your published version
-        with:
-          base_branches: main
-          path_scopes: src/features/**
-          doc_root_depth_from_scope: 1
-          openai_api_key: ${{ secrets.OPENAI_API_KEY }}
-          create_pr: false
+            - name: Run DocLoop AI
+              uses: doorloop/docloop-ai@v1.0.0 # Use your published version
+              with:
+                  base_branches: main
+                  path_scopes: src/features/**
+                  doc_root_depth_from_scope: 1
+                  openai_api_key: ${{ secrets.OPENAI_API_KEY }}
+                  create_pr: false
 ```
 
 ### Step 3: Test with a PR
@@ -185,9 +183,9 @@ jobs:
 2. **Use `create_pr: true`**: This is safer for testing - you can review changes before merging
 3. **Check Logs**: GitHub Actions logs will show detailed information about what the action is doing
 4. **Test Edge Cases**:
-   - PRs with no matching files
-   - PRs merged to non-matching branches
-   - PRs that don't match path scopes
+    - PRs with no matching files
+    - PRs merged to non-matching branches
+    - PRs that don't match path scopes
 
 ## Troubleshooting
 

@@ -1,52 +1,50 @@
-import * as github from "@actions/github";
-import { getOctokit } from "@actions/github";
-import { logger } from "../lib/logger";
+import * as github from '@actions/github';
+import { getOctokit } from '@actions/github';
 
-export async function getChangedFilesForMergedPr(
-  context: typeof github.context,
-  token: string
-): Promise<string[]> {
-  if (!context.payload.pull_request) {
-    throw new Error("This action must be run in the context of a pull_request event");
-  }
+import { logger } from '../lib/logger';
 
-  const pullNumber = context.payload.pull_request.number;
-  const owner = context.repo.owner;
-  const repo = context.repo.repo;
+export async function getChangedFilesForMergedPr(context: typeof github.context, token: string): Promise<string[]> {
+	if (!context.payload.pull_request) {
+		throw new Error('This action must be run in the context of a pull_request event');
+	}
 
-  const octokit = getOctokit(token);
+	const pullNumber = context.payload.pull_request.number;
+	const owner = context.repo.owner;
+	const repo = context.repo.repo;
 
-  logger.info(`Fetching changed files for PR #${pullNumber}`);
+	const octokit = getOctokit(token);
 
-  const files: string[] = [];
-  let page = 1;
-  const perPage = 100;
+	logger.info(`Fetching changed files for PR #${pullNumber}`);
 
-  while (true) {
-    const response = await octokit.rest.pulls.listFiles({
-      owner,
-      repo,
-      pull_number: pullNumber,
-      per_page: perPage,
-      page,
-    });
+	const files: string[] = [];
+	let page = 1;
+	const perPage = 100;
 
-    if (response.data.length === 0) {
-      break;
-    }
+	while (true) {
+		const response = await octokit.rest.pulls.listFiles({
+			owner,
+			repo,
+			pull_number: pullNumber,
+			per_page: perPage,
+			page,
+		});
 
-    for (const file of response.data) {
-      files.push(file.filename);
-    }
+		if (response.data.length === 0) {
+			break;
+		}
 
-    if (response.data.length < perPage) {
-      break;
-    }
+		for (const file of response.data) {
+			files.push(file.filename);
+		}
 
-    page++;
-  }
+		if (response.data.length < perPage) {
+			break;
+		}
 
-  logger.info(`Found ${files.length} changed files`);
+		page++;
+	}
 
-  return files;
+	logger.info(`Found ${files.length} changed files`);
+
+	return files;
 }

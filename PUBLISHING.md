@@ -13,16 +13,15 @@ This guide covers how to publish new versions of the DocLoop AI GitHub Action.
 ### Step 1: Prepare Your Repository
 
 1. **Ensure repository is public**:
-
-   - Go to repository settings on GitHub
-   - Verify the repository visibility is set to "Public"
+    - Go to repository settings on GitHub
+    - Verify the repository visibility is set to "Public"
 
 2. **Update version in package.json** (if needed):
-   ```bash
-   npm version patch   # for bug fixes (1.0.0 -> 1.0.1)
-   npm version minor   # for new features (1.0.0 -> 1.1.0)
-   npm version major   # for breaking changes (1.0.0 -> 2.0.0)
-   ```
+    ```bash
+    npm version patch   # for bug fixes (1.0.0 -> 1.0.1)
+    npm version minor   # for new features (1.0.0 -> 1.1.0)
+    npm version major   # for breaking changes (1.0.0 -> 2.0.0)
+    ```
 
 ### Step 2: Create a Release
 
@@ -75,11 +74,11 @@ When you push a tag (e.g., `v1.0.0`), the release workflow (`.github/workflows/r
 - Runs type checking (`npm run typecheck`)
 - Runs tests (`npm test`)
 - Creates a GitHub release with:
-  - Built files (`dist/**`)
-  - `action.yml`
-  - `README.md`
-  - `LICENSE`
-  - Auto-generated release notes
+    - Built files (`dist/**`)
+    - `action.yml`
+    - `README.md`
+    - `LICENSE`
+    - Auto-generated release notes
 
 ### Step 4: Verify the Release
 

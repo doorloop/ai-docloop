@@ -1,47 +1,46 @@
 name: 'DocLoop AI'
 description: 'Automatically generate and update README files using AI when PRs are merged'
 branding:
-  icon: 'book'
-  color: 'blue'
+    icon: 'book'
+    color: 'blue'
 inputs:
-  base_branches:
-    description: 'Comma or newline separated list of base branch names that should trigger the action once PRs are merged into them. Example: "main,develop,release/*"'
-    required: true
-  path_scopes:
-    description: 'One or more glob-like path scopes (comma or newline separated) that define where we care about changes. Example: "apps/client/src/features/**,packages/ui/**"'
-    required: true
-  doc_root_depth_from_scope:
-    description: 'How many path segments below the scope root define a single doc root'
-    required: false
-    default: '1'
-  readme_filename:
-    description: 'Name of the file to create/update in each doc root'
-    required: false
-    default: 'README.md'
-  detail_level:
-    description: 'Controls how detailed the README should be'
-    required: false
-    default: 'medium'
-  openai_model:
-    description: 'OpenAI model identifier (e.g., gpt-4o-mini, gpt-4o, gpt-4-turbo)'
-    required: false
-    default: 'gpt-4o-mini'
-  openai_api_key:
-    description: 'OpenAI API key (should come from GitHub secrets)'
-    required: true
-  update_mode:
-    description: 'Whether to update existing README or overwrite it'
-    required: false
-    default: 'update'
-  commit_message:
-    description: 'Commit message used for the docs commit'
-    required: false
-    default: 'docs: update READMEs [skip ci]'
-  create_pr:
-    description: 'When true, create a PR instead of committing directly'
-    required: false
-    default: 'false'
+    base_branches:
+        description: 'Comma or newline separated list of base branch names that should trigger the action once PRs are merged into them. Example: "main,develop,release/*"'
+        required: true
+    path_scopes:
+        description: 'One or more glob-like path scopes (comma or newline separated) that define where we care about changes. Example: "apps/client/src/features/**,packages/ui/**"'
+        required: true
+    doc_root_depth_from_scope:
+        description: 'How many path segments below the scope root define a single doc root'
+        required: false
+        default: '1'
+    readme_filename:
+        description: 'Name of the file to create/update in each doc root'
+        required: false
+        default: 'README.md'
+    detail_level:
+        description: 'Controls how detailed the README should be'
+        required: false
+        default: 'medium'
+    openai_model:
+        description: 'OpenAI model identifier (e.g., gpt-4o-mini, gpt-4o, gpt-4-turbo)'
+        required: false
+        default: 'gpt-4o-mini'
+    openai_api_key:
+        description: 'OpenAI API key (should come from GitHub secrets)'
+        required: true
+    update_mode:
+        description: 'Whether to update existing README or overwrite it'
+        required: false
+        default: 'update'
+    commit_message:
+        description: 'Commit message used for the docs commit'
+        required: false
+        default: 'docs: update READMEs [skip ci]'
+    create_pr:
+        description: 'When true, create a PR instead of committing directly'
+        required: false
+        default: 'false'
 runs:
-  using: 'node20'
-  main: 'dist/index.js'
-
+    using: 'node20'
+    main: 'dist/index.js'
