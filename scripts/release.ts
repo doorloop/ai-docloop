@@ -180,7 +180,7 @@ async function promptUser(): Promise<ReleaseAnswers | null> {
 	try {
 		const answers = await inquirer.prompt<ReleaseAnswers>(questions);
 		return answers;
-	} catch (error) {
+	} catch {
 		// If inquirer fails (e.g., not installed), return null to use fallback
 		return null;
 	}

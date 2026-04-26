@@ -1,0 +1,18 @@
+{
+	"$schema": "./node_modules/oxlint/configuration_schema.json",
+	"categories": {
+		"correctness": "error",
+		"suspicious": "warn",
+		"perf": "warn",
+		"style": "off",
+		"pedantic": "off",
+		"restriction": "off",
+		"nursery": "off"
+	},
+	"env": {
+		"node": true,
+		"es2022": true,
+		"jest": true
+	},
+	"ignorePatterns": ["dist/", "coverage/", "node_modules/", "bun.lock"]
+}

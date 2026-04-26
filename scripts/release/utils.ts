@@ -2,8 +2,7 @@ import { execSync } from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
 
-import { SEMVER_REGEX, VERSION_PREFIX_REGEX, PACKAGE_JSON_PATH, DIST_DIRECTORY } from './constants';
-import { TERMINAL_COLORS } from './constants';
+import { SEMVER_REGEX, VERSION_PREFIX_REGEX, PACKAGE_JSON_PATH, TERMINAL_COLORS } from './constants';
 import { ExecOptions, VersionType, Color } from './types';
 
 /** Log a message with color */

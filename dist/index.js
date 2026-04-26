@@ -37287,12 +37287,12 @@ async function generateReadme(ctx, cfg) {
     try {
       readme = JSON.parse(content);
     } catch (parseError) {
-      throw new Error(`Failed to parse structured output: ${parseError}`);
+      throw new Error(`Failed to parse structured output: ${parseError}`, { cause: parseError });
     }
     return formatReadmeToMarkdown(readme);
   } catch (error2) {
     if (error2 instanceof openai_default.APIError) {
-      throw new Error(`OpenAI API error (${error2.status}): ${error2.message}`);
+      throw new Error(`OpenAI API error (${error2.status}): ${error2.message}`, { cause: error2 });
     }
     throw error2;
   }
@@ -37463,7 +37463,7 @@ async function buildDocRoots(docRootMap, readmeFilename) {
     try {
       existingReadme = await import_fs2.promises.readFile(readmePath, "utf-8");
       logger.debug(`Found existing README at ${readmePath}`);
-    } catch (error2) {
+    } catch {
       logger.debug(`No existing README at ${readmePath}, will create new one`);
     }
     docRoots.push({
