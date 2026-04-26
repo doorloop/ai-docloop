@@ -1,3 +1,9 @@
+## [1.10.2](https://github.com/doorloop/ai-docloop/compare/v1.10.1...v1.10.2) (2026-04-26)
+
+### Bug Fixes
+
+- read GitHub token from action input, default to github.token ([ebbb135](https://github.com/doorloop/ai-docloop/commit/ebbb135f315b702d2104796abb282402c95e930d))
+
 ## [1.10.1](https://github.com/doorloop/ai-docloop/compare/v1.10.0...v1.10.1) (2026-04-26)
 
 ### Bug Fixes
