@@ -8,11 +8,13 @@ export interface DocRoot {
 export interface ReadmeStructure {
 	title: string;
 	description: string;
-	features?: string[];
-	installation?: string;
 	usage: string;
-	examples?: string[];
-	api?: string;
-	configuration?: string;
-	notes?: string;
+	// Optional fields are nullable because the OpenAI strict-mode schema
+	// requires every property to be present; absent content is sent as null.
+	features?: string[] | null;
+	examples?: string[] | null;
+	installation?: string | null;
+	api?: string | null;
+	configuration?: string | null;
+	notes?: string | null;
 }

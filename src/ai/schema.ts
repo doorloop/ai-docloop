@@ -7,93 +7,116 @@ type StructuredOutput = {
 	};
 };
 
-export function getReadmeSchema(detailLevel: 'low' | 'medium' | 'high'): StructuredOutput {
-	const baseSchema = {
-		type: 'object' as const,
-		properties: {
-			title: {
-				type: 'string',
-				description: 'The title/name of the feature or component',
-			},
-			description: {
-				type: 'string',
-				description: 'A clear, concise description of what this feature/component does',
-			},
-			usage: {
-				type: 'string',
-				description: 'How to use this feature/component, including code examples',
-			},
-		},
-		required: ['title', 'description', 'usage'],
-	};
+// OpenAI's structured-output strict mode requires:
+//   1. additionalProperties: false on every object,
+//   2. every property listed in `required`,
+//   3. optional content represented via nullable types (e.g. ['string', 'null']),
+//      not by leaving the field out of `required`.
+// The runtime formatter (src/ai/formatter.ts) already treats null / empty values
+// as "skip this section," so we model optional content as nullable and let the
+// model emit null when a section has nothing to say.
 
-	if (detailLevel === 'low') {
-		return {
-			type: 'json_schema',
-			json_schema: {
-				name: 'readme_structure',
-				strict: true,
-				schema: baseSchema,
-			},
-		};
-	}
+const TITLE = {
+	type: 'string',
+	description: 'The title/name of the feature or component',
+} as const;
 
-	const mediumSchema = {
-		...baseSchema,
-		properties: {
-			...baseSchema.properties,
-			features: {
-				type: 'array',
-				items: { type: 'string' },
-				description: 'List of key features or capabilities',
-			},
-			examples: {
-				type: 'array',
-				items: { type: 'string' },
-				description: 'Code examples demonstrating usage',
-			},
-		},
-	};
+const DESCRIPTION = {
+	type: 'string',
+	description: 'A clear, concise description of what this feature/component does',
+} as const;
 
-	if (detailLevel === 'medium') {
-		return {
-			type: 'json_schema',
-			json_schema: {
-				name: 'readme_structure',
-				strict: true,
-				schema: mediumSchema,
-			},
-		};
-	}
+const USAGE = {
+	type: 'string',
+	description: 'How to use this feature/component, including code examples',
+} as const;
 
-	// High detail level
+const FEATURES = {
+	type: ['array', 'null'],
+	items: { type: 'string' },
+	description: 'List of key features or capabilities. Null when there is nothing meaningful to list.',
+} as const;
+
+const EXAMPLES = {
+	type: ['array', 'null'],
+	items: { type: 'string' },
+	description: 'Code examples demonstrating usage. Null when no examples apply.',
+} as const;
+
+const INSTALLATION = {
+	type: ['string', 'null'],
+	description: 'Installation or setup instructions. Null when not applicable.',
+} as const;
+
+const API = {
+	type: ['string', 'null'],
+	description: 'API documentation, method signatures, or interface details. Null when not applicable.',
+} as const;
+
+const CONFIGURATION = {
+	type: ['string', 'null'],
+	description: 'Configuration options, environment variables, or settings. Null when not applicable.',
+} as const;
+
+const NOTES = {
+	type: ['string', 'null'],
+	description: 'Additional notes, best practices, or important considerations. Null when there are none.',
+} as const;
+
+function wrap(schema: Record<string, unknown>): StructuredOutput {
 	return {
 		type: 'json_schema',
 		json_schema: {
 			name: 'readme_structure',
 			strict: true,
-			schema: {
-				...mediumSchema,
-				properties: {
-					...mediumSchema.properties,
-					installation: {
-						type: 'string',
-						description: 'Installation or setup instructions if applicable',
-					},
-					api: {
-						type: 'string',
-						description: 'API documentation, method signatures, or interface details',
-					},
-					configuration: {
-						type: 'string',
-						description: 'Configuration options, environment variables, or settings',
-					},
-					notes: {
-						type: 'string',
-						description: 'Additional notes, best practices, or important considerations',
-					},
-				},
-			},
+			schema,
 		},
 	};
+}
+
+export function getReadmeSchema(detailLevel: 'low' | 'medium' | 'high'): StructuredOutput {
+	if (detailLevel === 'low') {
+		return wrap({
+			type: 'object',
+			additionalProperties: false,
+			properties: {
+				title: TITLE,
+				description: DESCRIPTION,
+				usage: USAGE,
+			},
+			required: ['title', 'description', 'usage'],
+		});
+	}
+
+	if (detailLevel === 'medium') {
+		return wrap({
+			type: 'object',
+			additionalProperties: false,
+			properties: {
+				title: TITLE,
+				description: DESCRIPTION,
+				usage: USAGE,
+				features: FEATURES,
+				examples: EXAMPLES,
+			},
+			required: ['title', 'description', 'usage', 'features', 'examples'],
+		});
+	}
+
+	return wrap({
+		type: 'object',
+		additionalProperties: false,
+		properties: {
+			title: TITLE,
+			description: DESCRIPTION,
+			usage: USAGE,
+			features: FEATURES,
+			examples: EXAMPLES,
+			installation: INSTALLATION,
+			api: API,
+			configuration: CONFIGURATION,
+			notes: NOTES,
+		},
+		required: ['title', 'description', 'usage', 'features', 'examples', 'installation', 'api', 'configuration', 'notes'],
+	});
 }
