@@ -58,7 +58,7 @@ export const incrementVersion = (currentVersion: string, type: VersionType): str
 };
 
 /** Check if git repository is clean */
-export const checkGitStatus = (): boolean => {
+const checkGitStatus = (): boolean => {
 	const status = exec('git status --porcelain', { silent: true });
 	return status?.trim() === '';
 };
