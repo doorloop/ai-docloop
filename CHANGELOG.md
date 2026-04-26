@@ -1,3 +1,10 @@
+## [1.10.3](https://github.com/doorloop/ai-docloop/compare/v1.10.2...v1.10.3) (2026-04-26)
+
+### Bug Fixes
+
+- make readme schema valid for OpenAI structured-output strict mode ([78a3473](https://github.com/doorloop/ai-docloop/commit/78a347328c55aacbb7735d699e0524108e7df947))
+- rebase against latest base before opening generated PR + brand the PR ([53233ca](https://github.com/doorloop/ai-docloop/commit/53233cad93fd75bbb41bb8eb43675746ab83b71b))
+
 ## [1.10.2](https://github.com/doorloop/ai-docloop/compare/v1.10.1...v1.10.2) (2026-04-26)
 
 ### Bug Fixes
