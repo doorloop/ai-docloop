@@ -1,13 +1,10 @@
 [install]
 exact = false
-frozenLockfile = false
 
 [install.lockfile]
 save = true
 
 [test]
 root = "src"
-preload = []
-coverage = false
 coverageReporter = ["text", "lcov"]
 coverageDir = "coverage"

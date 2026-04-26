@@ -1,13 +1,15 @@
+import { describe, expect, it, mock } from 'bun:test';
+
 import { PathScopeConfig } from '../../types';
 import { buildPathScopeConfigs, mapFilesToDocRoots } from '../path-mapper';
 
-jest.mock('../logger', () => ({
+mock.module('../logger', () => ({
 	logger: {
-		debug: jest.fn(),
-		info: jest.fn(),
-		warning: jest.fn(),
-		error: jest.fn(),
-		setFailed: jest.fn(),
+		debug: mock(),
+		info: mock(),
+		warning: mock(),
+		error: mock(),
+		setFailed: mock(),
 	},
 }));
 

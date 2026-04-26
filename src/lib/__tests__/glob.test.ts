@@ -1,3 +1,5 @@
+import { describe, expect, it } from 'bun:test';
+
 import { matchesGlob, globToRegex } from '../glob';
 
 describe('glob utilities', () => {
