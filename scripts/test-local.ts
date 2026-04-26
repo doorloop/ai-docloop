@@ -1,4 +1,4 @@
-#!/usr/bin/env tsx
+#!/usr/bin/env bun
 /**
  * Local testing helper script
  *
@@ -6,7 +6,7 @@
  * For actual local testing, use `act` (see TESTING.md).
  *
  * Usage:
- *   npm run test:local -- --repo owner/repo --pr-number 123 --base-branch main
+ *   bun run test:local -- --repo owner/repo --pr-number 123 --base-branch main
  */
 
 import { execSync } from "child_process";
@@ -37,7 +37,7 @@ function parseArgs(): TestOptions {
   // Validate required args
   if (!options.repo || !options.prNumber || !options.baseBranch) {
     console.error(`
-Usage: npm run test:local -- --repo owner/repo --pr-number 123 --base-branch main [options]
+Usage: bun run test:local -- --repo owner/repo --pr-number 123 --base-branch main [options]
 
 Required:
   --repo              Repository in format owner/repo
@@ -109,7 +109,7 @@ function main() {
 
     // Build the project
     console.log("\n📦 Building project...");
-    execSync("npm run build", { stdio: "inherit" });
+    execSync("bun run build", { stdio: "inherit" });
 
     // Check if act is installed
     try {
@@ -137,7 +137,7 @@ function main() {
     console.log(`
 ✅ Setup complete! Now run:
 
-   npm run act:test
+   bun run act:test
 
 Or manually:
 
