@@ -1,3 +1,9 @@
+## [1.9.1](https://github.com/doorloop/ai-docloop/compare/v1.9.0...v1.9.1) (2026-04-26)
+
+### Bug Fixes
+
+- bump @actions/\* to latest majors to clear undici vulnerabilities ([12f4dd9](https://github.com/doorloop/ai-docloop/commit/12f4dd9d4401723f0fc81865a93d7cc4c64ce45d))
+
 # [1.9.0](https://github.com/doorloop/ai-docloop/compare/v1.8.0...v1.9.0) (2026-04-26)
 
 # [1.8.0](https://github.com/doorloop/ai-docloop/compare/v1.7.0...v1.8.0) (2026-04-26)

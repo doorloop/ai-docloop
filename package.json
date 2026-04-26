@@ -1,6 +1,6 @@
 {
 	"name": "docloop-ai",
-	"version": "1.9.0",
+	"version": "1.9.1",
 	"description": "GitHub Action to automatically generate and update README files using AI",
 	"keywords": [
 		"ai",
