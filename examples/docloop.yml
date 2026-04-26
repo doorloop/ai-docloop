@@ -1,5 +1,8 @@
-# Example workflow showing how to use DocLoop AI in your repository
-# Copy this to your repository's .github/workflows/ directory
+# Example workflow showing how to use DocLoop AI in your repository.
+# Copy this to YOUR repository's .github/workflows/ directory (e.g. as docloop.yml).
+#
+# This file lives in `examples/` (not `.github/workflows/`) so GitHub does NOT
+# auto-run it from this repo — it is documentation, not active CI.
 
 name: Update READMEs
 
@@ -9,6 +12,8 @@ on:
 
 jobs:
     update-readmes:
+        # Only run when the PR was actually merged (not just closed).
+        if: github.event.pull_request.merged == true
         runs-on: ubuntu-latest
         permissions:
             contents: write
@@ -21,7 +26,9 @@ jobs:
                   fetch-depth: 0
 
             - name: Run DocLoop AI
-              uses: doorloop/ai-docloop@v1.1.1
+              # Pin to the major tag (`@v1`) so consumers automatically pick up
+              # patches and minor releases within the v1 line.
+              uses: doorloop/ai-docloop@v1
               with:
                   base_branches: main,develop
                   path_scopes: |
@@ -35,4 +42,3 @@ jobs:
                   update_mode: update
                   commit_message: 'docs: update READMEs [skip ci]'
                   create_pr: false # Set to true to create PRs instead of direct commits
-
