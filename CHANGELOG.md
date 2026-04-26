@@ -1,3 +1,9 @@
+## [1.10.1](https://github.com/doorloop/ai-docloop/compare/v1.10.0...v1.10.1) (2026-04-26)
+
+### Bug Fixes
+
+- stop example workflow from running as live CI ([731c479](https://github.com/doorloop/ai-docloop/commit/731c4790c9fe3227f01558ecf82bae70925f1d83))
+
 # [1.10.0](https://github.com/doorloop/ai-docloop/compare/v1.9.1...v1.10.0) (2026-04-26)
 
 ## [1.9.1](https://github.com/doorloop/ai-docloop/compare/v1.9.0...v1.9.1) (2026-04-26)
