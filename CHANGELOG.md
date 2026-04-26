@@ -1,3 +1,9 @@
+# [1.7.0](https://github.com/doorloop/ai-docloop/compare/v1.6.0...v1.7.0) (2026-04-26)
+
+### Features
+
+- husky pre-commit and commitlint via commit-msg hook ([d3da911](https://github.com/doorloop/ai-docloop/commit/d3da911711494c5a486e04cadce64ab06e807d0d))
+
 # [1.6.0](https://github.com/doorloop/ai-docloop/compare/v1.5.0...v1.6.0) (2026-04-26)
 
 # [1.5.0](https://github.com/doorloop/ai-docloop/compare/v1.4.0...v1.5.0) (2026-04-26)
