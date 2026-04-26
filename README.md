@@ -13,8 +13,8 @@ DocLoop AI is a GitHub Action that leverages large language models (LLMs) to aut
 - [Features](#features)
 - [Prerequisites](#prerequisites)
 - [Usage](#usage)
-  - [Basic Example](#basic-example)
-  - [Monorepo Example](#monorepo-example)
+    - [Basic Example](#basic-example)
+    - [Monorepo Example](#monorepo-example)
 - [Inputs](#inputs)
 - [How It Works](#how-it-works)
 - [Path Scope Configuration](#path-scope-configuration)
@@ -49,30 +49,30 @@ Create a workflow file (e.g., `.github/workflows/docloop.yml`):
 name: Update READMEs
 
 on:
-  pull_request:
-    types: [closed]
+    pull_request:
+        types: [closed]
 
 jobs:
-  update-readmes:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      pull-requests: write
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          fetch-depth: 0
+    update-readmes:
+        runs-on: ubuntu-latest
+        permissions:
+            contents: write
+            pull-requests: write
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+              with:
+                  token: ${{ secrets.GITHUB_TOKEN }}
+                  fetch-depth: 0
 
-      - name: Run DocLoop AI
-        uses: doorloop/ai-docloop@v1
-        with:
-          base_branches: main,develop
-          path_scopes: src/features/**
-          doc_root_depth_from_scope: 1
-          openai_api_key: ${{ secrets.OPENAI_API_KEY }}
-          create_pr: false
+            - name: Run DocLoop AI
+              uses: doorloop/ai-docloop@v1
+              with:
+                  base_branches: main,develop
+                  path_scopes: src/features/**
+                  doc_root_depth_from_scope: 1
+                  openai_api_key: ${{ secrets.OPENAI_API_KEY }}
+                  create_pr: false
 ```
 
 ### Monorepo Example
@@ -83,17 +83,17 @@ For monorepo setups with multiple path scopes:
 - name: Run DocLoop AI
   uses: doorloop/ai-docloop@v1
   with:
-    base_branches: main
-    path_scopes: |
-      apps/client/src/features/**
-      packages/ui/components/**
-      libs/shared/utils/**
-    doc_root_depth_from_scope: 1
-    detail_level: high
-    openai_model: gpt-4o
-    openai_api_key: ${{ secrets.OPENAI_API_KEY }}
-    update_mode: update
-    create_pr: true
+      base_branches: main
+      path_scopes: |
+          apps/client/src/features/**
+          packages/ui/components/**
+          libs/shared/utils/**
+      doc_root_depth_from_scope: 1
+      detail_level: high
+      openai_model: gpt-4o
+      openai_api_key: ${{ secrets.OPENAI_API_KEY }}
+      update_mode: update
+      create_pr: true
 ```
 
 ## Inputs
@@ -118,10 +118,10 @@ For monorepo setups with multiple path scopes:
 3. **File Detection**: Retrieves all changed files from the merged PR using the GitHub API
 4. **Path Mapping**: Maps changed files to documentation root folders based on `path_scopes` and `doc_root_depth_from_scope`
 5. **README Generation**: For each identified doc root:
-   - Reads existing README content if present (when `update_mode: update`)
-   - Analyzes changed files and PR context
-   - Uses OpenAI API to generate or update README content
-   - Writes the updated README file to disk
+    - Reads existing README content if present (when `update_mode: update`)
+    - Analyzes changed files and PR context
+    - Uses OpenAI API to generate or update README content
+    - Writes the updated README file to disk
 6. **Commit**: Stages, commits, and pushes changes either directly to the branch or via a pull request (based on `create_pr` setting)
 
 ## Path Scope Configuration
@@ -147,9 +147,9 @@ You can define multiple path scopes to handle different parts of your monorepo:
 
 ```yaml
 path_scopes: |
-  apps/client/src/features/**
-  packages/ui/components/**
-  libs/shared/utils/**
+    apps/client/src/features/**
+    packages/ui/components/**
+    libs/shared/utils/**
 ```
 
 Each scope is processed independently, allowing different documentation strategies for different parts of your codebase.
@@ -161,9 +161,9 @@ Each scope is processed independently, allowing different documentation strategi
 ```yaml
 - uses: doorloop/ai-docloop@v1
   with:
-    base_branches: main
-    path_scopes: src/features/**
-    openai_api_key: ${{ secrets.OPENAI_API_KEY }}
+      base_branches: main
+      path_scopes: src/features/**
+      openai_api_key: ${{ secrets.OPENAI_API_KEY }}
 ```
 
 ### High-Detail Documentation with PRs
@@ -171,13 +171,13 @@ Each scope is processed independently, allowing different documentation strategi
 ```yaml
 - uses: doorloop/ai-docloop@v1
   with:
-    base_branches: main,develop
-    path_scopes: src/**
-    detail_level: high
-    openai_model: gpt-4o
-    openai_api_key: ${{ secrets.OPENAI_API_KEY }}
-    create_pr: true
-    commit_message: "docs: auto-update READMEs [skip ci]"
+      base_branches: main,develop
+      path_scopes: src/**
+      detail_level: high
+      openai_model: gpt-4o
+      openai_api_key: ${{ secrets.OPENAI_API_KEY }}
+      create_pr: true
+      commit_message: 'docs: auto-update READMEs [skip ci]'
 ```
 
 ### Branch Pattern Matching
@@ -185,9 +185,9 @@ Each scope is processed independently, allowing different documentation strategi
 ```yaml
 - uses: doorloop/ai-docloop@v1
   with:
-    base_branches: main,release/*
-    path_scopes: packages/**
-    openai_api_key: ${{ secrets.OPENAI_API_KEY }}
+      base_branches: main,release/*
+      path_scopes: packages/**
+      openai_api_key: ${{ secrets.OPENAI_API_KEY }}
 ```
 
 ## Development
@@ -226,23 +226,23 @@ For comprehensive testing instructions, see [TESTING.md](./TESTING.md).
 
 1. **Local testing with act** (recommended):
 
-   ```bash
-   # Install act: https://github.com/nektos/act
-   brew install act
+    ```bash
+    # Install act: https://github.com/nektos/act
+    brew install act
 
-   # Setup secrets
-   cp .secrets.example .secrets
-   # Edit .secrets with your tokens
+    # Setup secrets
+    cp .secrets.example .secrets
+    # Edit .secrets with your tokens
 
-   # Build and test
-   npm run build
-   npm run act:test
-   ```
+    # Build and test
+    npm run build
+    npm run act:test
+    ```
 
 2. **Unit tests**:
-   ```bash
-   npm test
-   ```
+    ```bash
+    npm test
+    ```
 
 ## Publishing
 
