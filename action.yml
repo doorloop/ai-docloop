@@ -5,13 +5,11 @@ branding:
   color: 'blue'
 inputs:
   base_branches:
-    description: 'Comma or newline separated list of base branch names that should trigger the action once PRs are merged into them'
+    description: 'Comma or newline separated list of base branch names that should trigger the action once PRs are merged into them. Example: "main,develop,release/*"'
     required: true
-    example: 'main,develop,release/*'
   path_scopes:
-    description: 'One or more glob-like path scopes (comma or newline separated) that define where we care about changes'
+    description: 'One or more glob-like path scopes (comma or newline separated) that define where we care about changes. Example: "apps/client/src/features/**,packages/ui/**"'
     required: true
-    example: 'apps/client/src/features/**,packages/ui/**'
   doc_root_depth_from_scope:
     description: 'How many path segments below the scope root define a single doc root'
     required: false

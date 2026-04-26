@@ -36,6 +36,7 @@ jobs:
               run: npm test
 
             - name: Semantic Release
+              id: semantic
               uses: cycjimmy/semantic-release-action@v4.1.0
               with:
                   extra_plugins: |
@@ -45,3 +46,10 @@ jobs:
                       @semantic-release/npm
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: Update major version tag
+              if: steps.semantic.outputs.new_release_published == 'true'
+              run: |
+                  MAJOR="v${{ steps.semantic.outputs.new_release_major_version }}"
+                  git tag -f "$MAJOR"
+                  git push origin "$MAJOR" --force
