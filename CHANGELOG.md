@@ -1,3 +1,10 @@
+## [1.2.1](https://github.com/doorloop/ai-docloop/compare/v1.2.0...v1.2.1) (2026-04-26)
+
+
+### Bug Fixes
+
+* bundle runtime dependencies into dist/index.js ([2f91553](https://github.com/doorloop/ai-docloop/commit/2f9155303d26edba6f7f3e5a29855eddda8b7813))
+
 # [1.2.0](https://github.com/doorloop/ai-docloop/compare/v1.1.1...v1.2.0) (2026-04-26)
 
 
