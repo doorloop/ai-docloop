@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/doorloop/ai-docloop/compare/v1.1.1...v1.2.0) (2026-04-26)
+
+
+### Features
+
+* dogfood docloop on this repo's src/* directories ([2dd5d86](https://github.com/doorloop/ai-docloop/commit/2dd5d86d9ef08b24caeece9bb5dab276f83dddc3))
+
 ## [1.1.1](https://github.com/doorloop/ai-docloop/compare/v1.1.0...v1.1.1) (2026-04-26)
 
 
