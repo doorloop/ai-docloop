@@ -128,15 +128,15 @@ export const createTag = (tag: string, message: string): void => {
 
 /** Run type checking */
 export const runTypeCheck = (): void => {
-  exec("npm run typecheck");
+  exec("bun run typecheck");
 };
 
 /** Run tests */
 export const runTests = (): void => {
-  exec("npm test");
+  exec("bun test");
 };
 
 /** Build the project */
 export const buildProject = (): void => {
-  exec("npm run build");
+  exec("bun run build");
 };
