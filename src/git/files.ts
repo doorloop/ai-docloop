@@ -21,6 +21,9 @@ export async function getChangedFilesForMergedPr(context: typeof github.context,
 	const perPage = 100;
 
 	while (true) {
+		// Sequential await is required: each page request depends on knowing
+		// whether the previous page returned a full perPage of results.
+		// eslint-disable-next-line no-await-in-loop
 		const response = await octokit.rest.pulls.listFiles({
 			owner,
 			repo,

@@ -37455,25 +37455,26 @@ async function commitAndPush(updatedFiles, commitMessage, createPr, context2, to
 var import_fs2 = require("fs");
 var import_path2 = require("path");
 async function buildDocRoots(docRootMap, readmeFilename) {
-  const docRoots = [];
-  for (const [folderPath, changedFiles] of docRootMap.entries()) {
-    const featureName = folderPath.split("/").pop() || folderPath;
-    const readmePath = (0, import_path2.join)(folderPath, readmeFilename);
-    let existingReadme;
-    try {
-      existingReadme = await import_fs2.promises.readFile(readmePath, "utf-8");
-      logger.debug(`Found existing README at ${readmePath}`);
-    } catch {
-      logger.debug(`No existing README at ${readmePath}, will create new one`);
-    }
-    docRoots.push({
-      folderPath,
-      featureName,
-      changedFiles,
-      existingReadme
-    });
-  }
-  return docRoots;
+  const entries = Array.from(docRootMap.entries());
+  return Promise.all(
+    entries.map(async ([folderPath, changedFiles]) => {
+      const featureName = folderPath.split("/").pop() || folderPath;
+      const readmePath = (0, import_path2.join)(folderPath, readmeFilename);
+      let existingReadme;
+      try {
+        existingReadme = await import_fs2.promises.readFile(readmePath, "utf-8");
+        logger.debug(`Found existing README at ${readmePath}`);
+      } catch {
+        logger.debug(`No existing README at ${readmePath}, will create new one`);
+      }
+      return {
+        folderPath,
+        featureName,
+        changedFiles,
+        existingReadme
+      };
+    })
+  );
 }
 async function writeReadme(folderPath, readmeFilename, content) {
   await import_fs2.promises.mkdir(folderPath, { recursive: true });

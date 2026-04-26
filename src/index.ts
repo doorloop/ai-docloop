@@ -87,8 +87,13 @@ async function run() {
 					updateMode: config.updateMode,
 				};
 
+				// Sequential awaits per doc root are intentional: each generateReadme
+				// call hits the OpenAI API, and parallelizing across many doc roots
+				// would risk tripping rate limits on smaller plans.
+				// eslint-disable-next-line no-await-in-loop
 				const readmeContent = await generateReadme(aiContext, config);
 
+				// eslint-disable-next-line no-await-in-loop
 				const filePath = await writeReadme(docRoot.folderPath, config.readmeFilename, readmeContent);
 
 				updatedFiles.push(filePath);
