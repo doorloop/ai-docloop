@@ -4,7 +4,7 @@
 	"description": "GitHub Action to automatically generate and update README files using AI",
 	"main": "dist/index.js",
 	"scripts": {
-		"build": "tsup src/index.ts --format cjs --platform node --target node20 --out-dir dist --no-splitting --clean",
+		"build": "tsup",
 		"typecheck": "tsc --noEmit",
 		"test": "jest",
 		"test:watch": "jest --watch",
