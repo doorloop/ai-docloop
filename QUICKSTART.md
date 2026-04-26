@@ -122,4 +122,4 @@ bun run test:local -- --repo owner/repo --pr-number 123 --base-branch main
 - [README.md](./README.md) — full input reference and monorepo examples.
 - [TESTING.md](./TESTING.md) — detailed `act` setup.
 - [PUBLISHING.md](./PUBLISHING.md) — how releases work.
-- `.github/workflows/example-usage.yml` — a complete consumer-side workflow example.
+- `examples/docloop.yml` — a complete consumer-side workflow example.
