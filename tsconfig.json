@@ -4,6 +4,7 @@
 		"module": "ESNext",
 		"lib": ["ES2022"],
 		"moduleResolution": "node",
+		"types": ["bun"],
 		"outDir": "./dist",
 		"rootDir": "./src",
 		"strict": true,

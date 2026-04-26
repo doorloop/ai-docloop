@@ -1,26 +1,28 @@
+import { beforeEach, describe, expect, it, mock, type Mock } from 'bun:test';
+
 import * as core from '@actions/core';
 
 import { getConfig } from '../parser';
 
-// Mock @actions/core
-jest.mock('@actions/core', () => ({
-	getInput: jest.fn(),
+const getInputMock = mock();
+
+mock.module('@actions/core', () => ({
+	getInput: getInputMock,
 }));
 
-// Mock logger to avoid console output during tests
-jest.mock('../../lib/logger', () => ({
+mock.module('../../lib/logger', () => ({
 	logger: {
-		warning: jest.fn(),
+		warning: mock(),
 	},
 }));
 
 describe('config parser', () => {
 	beforeEach(() => {
-		jest.clearAllMocks();
+		getInputMock.mockReset();
 	});
 
 	it('should parse required inputs', () => {
-		(core.getInput as jest.Mock).mockImplementation((name: string) => {
+		(core.getInput as Mock<typeof core.getInput>).mockImplementation((name: string) => {
 			const inputs: Record<string, string> = {
 				base_branches: 'main,develop',
 				path_scopes: 'apps/**',
@@ -37,7 +39,7 @@ describe('config parser', () => {
 	});
 
 	it('should use default values', () => {
-		(core.getInput as jest.Mock).mockImplementation((name: string) => {
+		(core.getInput as Mock<typeof core.getInput>).mockImplementation((name: string) => {
 			const inputs: Record<string, string> = {
 				base_branches: 'main',
 				path_scopes: 'apps/**',
@@ -57,7 +59,7 @@ describe('config parser', () => {
 	});
 
 	it('should parse newline-separated arrays', () => {
-		(core.getInput as jest.Mock).mockImplementation((name: string) => {
+		(core.getInput as Mock<typeof core.getInput>).mockImplementation((name: string) => {
 			const inputs: Record<string, string> = {
 				base_branches: 'main\ndevelop\nrelease/*',
 				path_scopes: 'apps/**\npackages/**',
@@ -73,7 +75,7 @@ describe('config parser', () => {
 	});
 
 	it('should parse boolean values', () => {
-		(core.getInput as jest.Mock).mockImplementation((name: string) => {
+		(core.getInput as Mock<typeof core.getInput>).mockImplementation((name: string) => {
 			const inputs: Record<string, string> = {
 				base_branches: 'main',
 				path_scopes: 'apps/**',
@@ -89,7 +91,7 @@ describe('config parser', () => {
 	});
 
 	it('should throw error for missing required inputs', () => {
-		(core.getInput as jest.Mock).mockImplementation(() => '');
+		(core.getInput as Mock<typeof core.getInput>).mockImplementation(() => '');
 
 		expect(() => getConfig()).toThrow();
 	});
