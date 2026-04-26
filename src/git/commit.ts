@@ -34,8 +34,11 @@ export async function commitAndPush(
 	await exec('git', ['config', 'user.name', 'github-actions[bot]']);
 	await exec('git', ['config', 'user.email', 'github-actions[bot]@users.noreply.github.com']);
 
-	// Stage all updated files
+	// Stage all updated files. Git uses a single shared index file per repo;
+	// running parallel `git add` invocations can corrupt the index or fail
+	// with "another git process seems to be running".
 	for (const file of updatedFiles) {
+		// eslint-disable-next-line no-await-in-loop
 		await exec('git', ['add', file]);
 	}
 
