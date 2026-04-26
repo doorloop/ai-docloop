@@ -194,29 +194,41 @@ Each scope is processed independently, allowing different documentation strategi
 
 ### Prerequisites
 
-- Node.js >= 20.0.0
-- npm
+- [Bun](https://bun.sh) >= 1.1
+- Node.js >= 20 (consumers of the action need nothing — only contributors who want to run the local `act` flow)
 
 ### Building
 
 ```bash
-npm install
-npm run build
+bun install
+bun run build
 ```
 
 ### Type Checking
 
 ```bash
-npm run typecheck
+bun run typecheck
 ```
 
 ### Running Tests
 
 ```bash
-npm test
-npm run test:watch      # Watch mode
-npm run test:coverage   # With coverage
+bun test
+bun test --watch        # Watch mode
+bun test --coverage     # With coverage
 ```
+
+### Linting & Formatting
+
+```bash
+bun run lint            # oxlint
+bun run lint:fix        # oxlint with autofixes
+bun run format          # oxfmt --write
+bun run format:check    # CI-style check
+bun run knip            # Detect unused exports / files / dependencies
+```
+
+Husky hooks installed via `bun install` enforce formatting + linting on staged files (`pre-commit`) and conventional-commit messages (`commit-msg`).
 
 ## Testing
 
@@ -235,13 +247,13 @@ For comprehensive testing instructions, see [TESTING.md](./TESTING.md).
     # Edit .secrets with your tokens
 
     # Build and test
-    npm run build
-    npm run act:test
+    bun run build
+    bun run act:test
     ```
 
 2. **Unit tests**:
     ```bash
-    npm test
+    bun test
     ```
 
 ## Publishing
