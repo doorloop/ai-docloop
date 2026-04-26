@@ -1,6 +1,6 @@
 const config = {
 	branches: ['main'],
-	repositoryUrl: 'git+https://github.com/doorloop/docloop-ai',
+	repositoryUrl: 'git+https://github.com/doorloop/ai-docloop',
 	plugins: [
 		[
 			'@semantic-release/commit-analyzer',

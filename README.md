@@ -4,7 +4,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue.svg)](https://www.typescriptlang.org/)
-[![Version](https://img.shields.io/github/v/tag/doorloop/docloop-ai)](https://github.com/doorloop/docloop-ai/releases)
+[![Version](https://img.shields.io/github/v/tag/doorloop/ai-docloop)](https://github.com/doorloop/ai-docloop/releases)
 
 DocLoop AI is a GitHub Action that leverages large language models (LLMs) to automatically generate and maintain README documentation for your codebase. It analyzes changes in merged pull requests and creates or updates README files in the affected directories, making documentation maintenance effortless.
 
@@ -66,7 +66,7 @@ jobs:
           fetch-depth: 0
 
       - name: Run DocLoop AI
-        uses: doorloop/docloop-ai@v1
+        uses: doorloop/ai-docloop@v1
         with:
           base_branches: main,develop
           path_scopes: src/features/**
@@ -81,7 +81,7 @@ For monorepo setups with multiple path scopes:
 
 ```yaml
 - name: Run DocLoop AI
-  uses: doorloop/docloop-ai@v1
+  uses: doorloop/ai-docloop@v1
   with:
     base_branches: main
     path_scopes: |
@@ -159,7 +159,7 @@ Each scope is processed independently, allowing different documentation strategi
 ### Basic Single-Path Setup
 
 ```yaml
-- uses: doorloop/docloop-ai@v1
+- uses: doorloop/ai-docloop@v1
   with:
     base_branches: main
     path_scopes: src/features/**
@@ -169,7 +169,7 @@ Each scope is processed independently, allowing different documentation strategi
 ### High-Detail Documentation with PRs
 
 ```yaml
-- uses: doorloop/docloop-ai@v1
+- uses: doorloop/ai-docloop@v1
   with:
     base_branches: main,develop
     path_scopes: src/**
@@ -183,7 +183,7 @@ Each scope is processed independently, allowing different documentation strategi
 ### Branch Pattern Matching
 
 ```yaml
-- uses: doorloop/docloop-ai@v1
+- uses: doorloop/ai-docloop@v1
   with:
     base_branches: main,release/*
     path_scopes: packages/**

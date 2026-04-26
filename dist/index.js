@@ -235,9 +235,7 @@ function isPathPrefix(prefixSegments, pathSegments) {
   return true;
 }
 function findMatchingScope(fileSegments, scopes) {
-  const matchingScopes = scopes.filter(
-    (scope) => isPathPrefix(scope.scopeRootSegments, fileSegments)
-  );
+  const matchingScopes = scopes.filter((scope) => isPathPrefix(scope.scopeRootSegments, fileSegments));
   if (matchingScopes.length === 0) {
     return null;
   }
@@ -258,9 +256,7 @@ function mapFilesToDocRoots(files, pathScopes, depthFromScope) {
     const rootLen = matchingScope.scopeRootSegments.length;
     const docRootSegments = fileSegments.slice(0, rootLen + depthFromScope);
     if (docRootSegments.length <= rootLen) {
-      logger.debug(
-        `File "${file}" is not deep enough for depth ${depthFromScope} from scope root, skipping`
-      );
+      logger.debug(`File "${file}" is not deep enough for depth ${depthFromScope} from scope root, skipping`);
       continue;
     }
     const docRootPath = docRootSegments.join("/");
@@ -593,19 +589,21 @@ async function run() {
     if (!baseBranch) {
       throw new Error("Could not determine base branch from PR");
     }
-    const baseBranchMatches = config.baseBranches.some(
-      (pattern) => matchesGlob(baseBranch, pattern)
-    );
+    const baseBranchMatches = config.baseBranches.some((pattern) => matchesGlob(baseBranch, pattern));
     if (!baseBranchMatches) {
       logger.info(
-        `Base branch "${baseBranch}" does not match any configured base branches: ${config.baseBranches.join(", ")}`
+        `Base branch "${baseBranch}" does not match any configured base branches: ${config.baseBranches.join(
+          ", "
+        )}`
       );
       return;
     }
     logger.info(`Base branch "${baseBranch}" matches configured branches`);
     const token = process.env.GITHUB_TOKEN || "";
     if (!token) {
-      throw new Error("GITHUB_TOKEN is required but not provided. Make sure the workflow has contents: write permission.");
+      throw new Error(
+        "GITHUB_TOKEN is required but not provided. Make sure the workflow has contents: write permission."
+      );
     }
     const changedFiles = await getChangedFilesForMergedPr(github.context, token);
     if (changedFiles.length === 0) {
@@ -615,11 +613,7 @@ async function run() {
     logger.info(`Found ${changedFiles.length} changed file(s)`);
     const pathScopeConfigs = buildPathScopeConfigs(config.pathScopes);
     logger.debug(`Built ${pathScopeConfigs.length} path scope config(s)`);
-    const docRootMap = mapFilesToDocRoots(
-      changedFiles,
-      pathScopeConfigs,
-      config.docRootDepthFromScope
-    );
+    const docRootMap = mapFilesToDocRoots(changedFiles, pathScopeConfigs, config.docRootDepthFromScope);
     if (docRootMap.size === 0) {
       logger.info("No changed files match the configured path scopes");
       return;
@@ -640,11 +634,7 @@ async function run() {
           updateMode: config.updateMode
         };
         const readmeContent = await generateReadme(aiContext, config);
-        const filePath = await writeReadme(
-          docRoot.folderPath,
-          config.readmeFilename,
-          readmeContent
-        );
+        const filePath = await writeReadme(docRoot.folderPath, config.readmeFilename, readmeContent);
         updatedFiles.push(filePath);
       } catch (error2) {
         logger.error(`Failed to generate README for ${docRoot.folderPath}: ${error2}`);
@@ -655,13 +645,7 @@ async function run() {
       return;
     }
     logger.info(`Generated/updated ${updatedFiles.length} README file(s)`);
-    await commitAndPush(
-      updatedFiles,
-      config.commitMessage,
-      config.createPr,
-      github.context,
-      token
-    );
+    await commitAndPush(updatedFiles, config.commitMessage, config.createPr, github.context, token);
     logger.info("Action completed successfully");
   } catch (error2) {
     logger.setFailed(error2 instanceof Error ? error2 : String(error2));
