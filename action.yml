@@ -41,6 +41,10 @@ inputs:
         description: 'When true, create a PR instead of committing directly'
         required: false
         default: 'false'
+    github_token:
+        description: 'GitHub token used to read PR files and to push commits / open PRs. Defaults to the workflow-provided token, which has the permissions granted by the calling job.'
+        required: false
+        default: ${{ github.token }}
 runs:
     using: 'node20'
     main: 'dist/index.js'

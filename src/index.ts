@@ -1,3 +1,4 @@
+import * as core from '@actions/core';
 import * as github from '@actions/github';
 
 import { generateReadme } from './ai';
@@ -43,9 +44,11 @@ async function run() {
 
 		logger.info(`Base branch "${baseBranch}" matches configured branches`);
 
-		const token = process.env.GITHUB_TOKEN || '';
+		const token = core.getInput('github_token');
 		if (!token) {
-			throw new Error('GITHUB_TOKEN is required but not provided. Make sure the workflow has contents: write permission.');
+			throw new Error(
+				'No GitHub token available. The github_token input defaults to ${{ github.token }}; make sure the calling job grants contents: write (and pull-requests: write when create_pr is true).',
+			);
 		}
 
 		const changedFiles = await getChangedFilesForMergedPr(github.context, token);

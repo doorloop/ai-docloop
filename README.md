@@ -37,7 +37,7 @@ DocLoop AI is a GitHub Action that leverages large language models (LLMs) to aut
 
 - GitHub repository with Actions enabled
 - OpenAI API key ([Get one here](https://platform.openai.com/api-keys))
-- GitHub token with `contents: write` and `pull-requests: write` permissions (automatically provided via `GITHUB_TOKEN`)
+- A workflow job that grants `contents: write` and `pull-requests: write` permissions. The action picks up the workflow-provided token automatically via the `github_token` input default; override it only if you need a PAT (e.g., for cross-repo writes).
 
 ## Usage
 
@@ -98,18 +98,19 @@ For monorepo setups with multiple path scopes:
 
 ## Inputs
 
-| Input                       | Required | Default                          | Description                                                                                          |
-| --------------------------- | -------- | -------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| `base_branches`             | Yes      | -                                | Comma or newline separated list of base branch names (supports glob patterns like `release/*`)       |
-| `path_scopes`               | Yes      | -                                | One or more glob-like path scopes (comma or newline separated) that define where changes are tracked |
-| `doc_root_depth_from_scope` | No       | `1`                              | How many path segments below the scope root define a single doc root                                 |
-| `readme_filename`           | No       | `README.md`                      | Name of the README file to create/update in each doc root                                            |
-| `detail_level`              | No       | `medium`                         | Controls how detailed the README should be. Options: `low`, `medium`, `high`                         |
-| `openai_model`              | No       | `gpt-4o-mini`                    | OpenAI model identifier (e.g., `gpt-4o-mini`, `gpt-4o`, `gpt-4-turbo`)                               |
-| `openai_api_key`            | Yes      | -                                | OpenAI API key (should be stored in GitHub secrets)                                                  |
-| `update_mode`               | No       | `update`                         | `update` to merge with existing README, `overwrite` for fresh generation                             |
-| `commit_message`            | No       | `docs: update READMEs [skip ci]` | Commit message used for the documentation commit                                                     |
-| `create_pr`                 | No       | `false`                          | When `true`, creates a PR instead of committing directly                                             |
+| Input                       | Required | Default                          | Description                                                                                                                                                        |
+| --------------------------- | -------- | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `base_branches`             | Yes      | -                                | Comma or newline separated list of base branch names (supports glob patterns like `release/*`)                                                                     |
+| `path_scopes`               | Yes      | -                                | One or more glob-like path scopes (comma or newline separated) that define where changes are tracked                                                               |
+| `doc_root_depth_from_scope` | No       | `1`                              | How many path segments below the scope root define a single doc root                                                                                               |
+| `readme_filename`           | No       | `README.md`                      | Name of the README file to create/update in each doc root                                                                                                          |
+| `detail_level`              | No       | `medium`                         | Controls how detailed the README should be. Options: `low`, `medium`, `high`                                                                                       |
+| `openai_model`              | No       | `gpt-4o-mini`                    | OpenAI model identifier (e.g., `gpt-4o-mini`, `gpt-4o`, `gpt-4-turbo`)                                                                                             |
+| `openai_api_key`            | Yes      | -                                | OpenAI API key (should be stored in GitHub secrets)                                                                                                                |
+| `update_mode`               | No       | `update`                         | `update` to merge with existing README, `overwrite` for fresh generation                                                                                           |
+| `commit_message`            | No       | `docs: update READMEs [skip ci]` | Commit message used for the documentation commit                                                                                                                   |
+| `create_pr`                 | No       | `false`                          | When `true`, creates a PR instead of committing directly                                                                                                           |
+| `github_token`              | No       | `${{ github.token }}`            | Token for reading PR files and pushing commits / opening PRs. The default uses the workflow-provided token; override only to use a PAT with cross-repo permissions |
 
 ## How It Works
 
