@@ -28,7 +28,7 @@ async function run() {
 
 		logger.info(`Processing merged PR #${pr.number}: ${pr.title}`);
 
-		const config = getConfig();
+		const config = await getConfig();
 
 		const baseBranch = pr.base?.ref;
 		if (!baseBranch) {

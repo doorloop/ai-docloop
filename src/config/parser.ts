@@ -2,6 +2,7 @@ import * as core from '@actions/core';
 
 import { logger } from '../lib/logger';
 import { ActionConfig, DetailLevel, UpdateMode } from '../types';
+import { loadDocloopConfig } from './loader';
 
 function parseStringArray(input: string): string[] {
 	return input
@@ -41,7 +42,13 @@ function parseInteger(input: string, defaultValue: number): number {
 	return parsed;
 }
 
-export function getConfig(): ActionConfig {
+export async function getConfig(): Promise<ActionConfig> {
+	const configFile = core.getInput('config_file') || '.docloop.yml';
+	const docloopConfig = await loadDocloopConfig(configFile);
+	if (docloopConfig !== null) {
+		logger.info(`Loaded ${configFile}: ${docloopConfig.mappings.length} mapping(s). Legacy inputs still drive behavior in this release.`);
+	}
+
 	const baseBranches = parseStringArray(core.getInput('base_branches', { required: true }));
 	const pathScopes = parseStringArray(core.getInput('path_scopes', { required: true }));
 	const docRootDepthFromScope = parseInteger(core.getInput('doc_root_depth_from_scope') || '1', 1);

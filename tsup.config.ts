@@ -8,5 +8,5 @@ export default defineConfig({
 	outDir: 'dist',
 	splitting: false,
 	clean: true,
-	noExternal: ['@actions/core', '@actions/exec', '@actions/github', 'openai', 'normalize-path'],
+	noExternal: ['@actions/core', '@actions/exec', '@actions/github', 'openai', 'normalize-path', 'yaml'],
 });
