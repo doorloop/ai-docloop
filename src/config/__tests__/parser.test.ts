@@ -12,7 +12,11 @@ mock.module('@actions/core', () => ({
 
 mock.module('../../lib/logger', () => ({
 	logger: {
+		debug: mock(),
+		info: mock(),
 		warning: mock(),
+		error: mock(),
+		setFailed: mock(),
 	},
 }));
 
@@ -21,7 +25,7 @@ describe('config parser', () => {
 		getInputMock.mockReset();
 	});
 
-	it('should parse required inputs', () => {
+	it('should parse required inputs', async () => {
 		(core.getInput as Mock<typeof core.getInput>).mockImplementation((name: string) => {
 			const inputs: Record<string, string> = {
 				base_branches: 'main,develop',
@@ -31,14 +35,14 @@ describe('config parser', () => {
 			return inputs[name] || '';
 		});
 
-		const config = getConfig();
+		const config = await getConfig();
 
 		expect(config.baseBranches).toEqual(['main', 'develop']);
 		expect(config.pathScopes).toEqual(['apps/**']);
 		expect(config.openaiApiKey).toBe('test-key');
 	});
 
-	it('should use default values', () => {
+	it('should use default values', async () => {
 		(core.getInput as Mock<typeof core.getInput>).mockImplementation((name: string) => {
 			const inputs: Record<string, string> = {
 				base_branches: 'main',
@@ -48,7 +52,7 @@ describe('config parser', () => {
 			return inputs[name] || '';
 		});
 
-		const config = getConfig();
+		const config = await getConfig();
 
 		expect(config.readmeFilename).toBe('README.md');
 		expect(config.detailLevel).toBe('medium');
@@ -58,7 +62,7 @@ describe('config parser', () => {
 		expect(config.createPr).toBe(false);
 	});
 
-	it('should parse newline-separated arrays', () => {
+	it('should parse newline-separated arrays', async () => {
 		(core.getInput as Mock<typeof core.getInput>).mockImplementation((name: string) => {
 			const inputs: Record<string, string> = {
 				base_branches: 'main\ndevelop\nrelease/*',
@@ -68,13 +72,13 @@ describe('config parser', () => {
 			return inputs[name] || '';
 		});
 
-		const config = getConfig();
+		const config = await getConfig();
 
 		expect(config.baseBranches).toEqual(['main', 'develop', 'release/*']);
 		expect(config.pathScopes).toEqual(['apps/**', 'packages/**']);
 	});
 
-	it('should parse boolean values', () => {
+	it('should parse boolean values', async () => {
 		(core.getInput as Mock<typeof core.getInput>).mockImplementation((name: string) => {
 			const inputs: Record<string, string> = {
 				base_branches: 'main',
@@ -85,14 +89,14 @@ describe('config parser', () => {
 			return inputs[name] || '';
 		});
 
-		const config = getConfig();
+		const config = await getConfig();
 
 		expect(config.createPr).toBe(true);
 	});
 
-	it('should throw error for missing required inputs', () => {
+	it('should throw error for missing required inputs', async () => {
 		(core.getInput as Mock<typeof core.getInput>).mockImplementation(() => '');
 
-		expect(() => getConfig()).toThrow();
+		await expect(getConfig()).rejects.toThrow();
 	});
 });

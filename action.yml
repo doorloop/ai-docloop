@@ -45,6 +45,10 @@ inputs:
         description: 'GitHub token used to read PR files and to push commits / open PRs. Defaults to the workflow-provided token, which has the permissions granted by the calling job.'
         required: false
         default: ${{ github.token }}
+    config_file:
+        description: 'Path to an optional .docloop.yml that, when present, supplies the rich mapping/trigger/prompt config. When absent, the action falls back to the inputs above.'
+        required: false
+        default: '.docloop.yml'
 runs:
     using: 'node20'
     main: 'dist/index.js'

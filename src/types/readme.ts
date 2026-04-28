@@ -17,4 +17,7 @@ export interface ReadmeStructure {
 	api?: string | null;
 	configuration?: string | null;
 	notes?: string | null;
+	// Update signal — only present when the schema is built with withUpdateSignal=true.
+	should_update?: boolean;
+	update_reason?: string;
 }

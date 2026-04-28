@@ -1,3 +1,3 @@
 export { logger } from './logger';
-export { buildPathScopeConfigs, mapFilesToDocRoots } from './path-mapper';
+export { buildPathScopeConfigs, mapFilesToDocRoots, resolveMappingTargets } from './path-mapper';
 export { matchesGlob } from './glob';

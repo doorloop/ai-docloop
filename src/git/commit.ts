@@ -49,20 +49,26 @@ function buildPrBody(opts: { sourcePrNumber: number | undefined; sourcePrTitle: 
 	].join('\n');
 }
 
+interface CommitAndPushOptions {
+	readonly baseBranchOverride?: string;
+}
+
 export async function commitAndPush(
 	updatedFiles: string[],
 	commitMessage: string,
 	createPr: boolean,
 	context: typeof github.context,
 	token: string,
+	options?: CommitAndPushOptions,
 ): Promise<void> {
 	if (updatedFiles.length === 0) {
 		logger.info('No files to commit');
 		return;
 	}
 
-	// Get base branch
-	const baseBranch = context.payload.pull_request?.base?.ref;
+	// Resolve base branch: explicit override beats PR context (workflow_dispatch
+	// runs without a PR, so the override is the only signal there).
+	const baseBranch = options?.baseBranchOverride ?? context.payload.pull_request?.base?.ref;
 	if (!baseBranch) {
 		throw new Error('Could not determine base branch');
 	}

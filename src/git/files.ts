@@ -1,7 +1,16 @@
+import { getExecOutput } from '@actions/exec';
 import * as github from '@actions/github';
 import { getOctokit } from '@actions/github';
 
 import { logger } from '../lib/logger';
+
+export async function listAllRepoFiles(): Promise<string[]> {
+	const result = await getExecOutput('git', ['ls-files'], { silent: true });
+	return result.stdout
+		.split('\n')
+		.map((line) => line.trim())
+		.filter((line) => line.length > 0);
+}
 
 export async function getChangedFilesForMergedPr(context: typeof github.context, token: string): Promise<string[]> {
 	if (!context.payload.pull_request) {
