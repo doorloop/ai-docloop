@@ -1,8 +1,18 @@
-# Example workflow showing how to use DocLoop AI in your repository.
-# Copy this to YOUR repository's .github/workflows/ directory (e.g. as docloop.yml).
+# Basic example — flat v1 inputs, direct commit on PR merge.
 #
+# Copy to YOUR repository's .github/workflows/ directory (e.g. as docloop.yml).
 # This file lives in `examples/` (not `.github/workflows/`) so GitHub does NOT
 # auto-run it from this repo — it is documentation, not active CI.
+#
+# The action is published on the GitHub Marketplace as `doorloop/ai-docloop`.
+# Pin to `@v1` to track the v1.x line; semantic-release moves the v1 tag on
+# every minor/patch.
+#
+# For richer setups (per-feature mappings, custom prompt files, PR-comment
+# previews) see the sibling example folders:
+#
+#   - examples/wiki-insights/  — <FEATURE_NAME>-feature.md docs + custom prompt
+#   - examples/pr-preview/     — preview proposed README updates as a PR comment
 
 name: Update READMEs
 
@@ -26,8 +36,6 @@ jobs:
                   fetch-depth: 0
 
             - name: Run DocLoop AI
-              # Pin to the major tag (`@v1`) so consumers automatically pick up
-              # patches and minor releases within the v1 line.
               uses: doorloop/ai-docloop@v1
               with:
                   base_branches: main,develop
@@ -41,4 +49,4 @@ jobs:
                   openai_api_key: ${{ secrets.OPENAI_API_KEY }}
                   update_mode: update
                   commit_message: 'docs: update READMEs [skip ci]'
-                  create_pr: false # Set to true to create PRs instead of direct commits
+                  create_pr: false # Set to true to open a PR instead of pushing directly

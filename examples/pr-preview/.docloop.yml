@@ -1,0 +1,37 @@
+# DocLoop AI config — PR preview comment.
+#
+# Copy to YOUR repository's root as `.docloop.yml`.
+#
+# What this example demonstrates:
+#   - The action runs on every PR open / synchronize / reopen, NOT just
+#     on merge. Reviewers see the proposed README updates in a single
+#     PR comment before merging anything.
+#   - Nothing is written to disk. The comment renders the proposed
+#     content per target so you can spot bad output before it lands.
+#   - The same comment is rewritten in place on each subsequent push
+#     (de-duplicated by signature) so the PR stays clean.
+#
+# Pair this with the wiki-insights example (or any other mapping setup)
+# by enabling both triggers — one for the live preview during review,
+# the other for the final write at merge time.
+
+version: 1
+
+defaults:
+    detail_level: medium
+    model: gpt-4o-mini
+    format: structured
+    on_missing_readme: create
+
+triggers:
+    pr_opened:
+        enabled: true
+        base_branches: ['main']
+        delivery: pr_comment
+        commit_message: '' # unused for pr_comment, but valid YAML still wants a string
+
+mappings:
+    - name: server-features
+      watch:
+          - apps/server/features/<FEATURE_NAME>/**
+      readme: docs/wiki/insights/<FEATURE_NAME>-feature.md

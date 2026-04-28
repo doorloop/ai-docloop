@@ -1,0 +1,30 @@
+# Workflow file for the pr-preview example.
+#
+# Copy to YOUR repository's .github/workflows/ directory.
+# Note the `types:` list — pr_opened needs all three of opened,
+# synchronize, and reopened to refresh the preview comment as the
+# PR evolves.
+
+name: DocLoop preview
+
+on:
+    pull_request:
+        types: [opened, synchronize, reopened]
+
+jobs:
+    preview:
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read # we don't write to disk in pr_comment mode
+            pull-requests: write # to post / edit the preview comment
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+              with:
+                  token: ${{ secrets.GITHUB_TOKEN }}
+                  fetch-depth: 0
+
+            - name: Run DocLoop AI
+              uses: doorloop/ai-docloop@v1
+              with:
+                  openai_api_key: ${{ secrets.OPENAI_API_KEY }}
