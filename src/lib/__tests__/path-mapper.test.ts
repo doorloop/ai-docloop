@@ -1,7 +1,7 @@
 import { describe, expect, it, mock } from 'bun:test';
 
-import { PathScopeConfig } from '../../types';
-import { buildPathScopeConfigs, mapFilesToDocRoots } from '../path-mapper';
+import { MappingConfig, PathScopeConfig } from '../../types';
+import { buildPathScopeConfigs, mapFilesToDocRoots, resolveMappingTargets } from '../path-mapper';
 
 mock.module('../logger', () => ({
 	logger: {
@@ -124,6 +124,100 @@ describe('pathMapper', () => {
 			// slice(0, 3) on 2 segments = 2 segments
 			// 2 <= 2 is true, so it should be skipped
 			expect(result.size).toBe(0);
+		});
+	});
+
+	describe('resolveMappingTargets', () => {
+		const baseMapping: MappingConfig = {
+			name: 'server-features',
+			watch: ['apps/server/features/<FEATURE_NAME>/**'],
+			readme: 'docs/wiki/insights/<FEATURE_NAME>-feature.md',
+		};
+
+		it('groups files by capture value into a single target per feature', () => {
+			const files = [
+				'apps/server/features/inspections/components/Button.tsx',
+				'apps/server/features/inspections/utils/helper.ts',
+				'apps/server/features/payment/index.ts',
+			];
+			const targets = resolveMappingTargets(baseMapping, files, []);
+			expect(targets).toHaveLength(2);
+
+			const inspections = targets.find((t) => t.captures.FEATURE_NAME === 'inspections');
+			const payment = targets.find((t) => t.captures.FEATURE_NAME === 'payment');
+
+			expect(inspections?.targetPath).toBe('docs/wiki/insights/inspections-feature.md');
+			expect(inspections?.changedFiles).toEqual([
+				'apps/server/features/inspections/components/Button.tsx',
+				'apps/server/features/inspections/utils/helper.ts',
+			]);
+			expect(payment?.targetPath).toBe('docs/wiki/insights/payment-feature.md');
+			expect(payment?.changedFiles).toEqual(['apps/server/features/payment/index.ts']);
+		});
+
+		it('drops files that do not match any watch entry', () => {
+			const files = ['apps/server/features/inspections/index.ts', 'packages/utils/helper.ts', 'README.md'];
+			const targets = resolveMappingTargets(baseMapping, files, []);
+			expect(targets).toHaveLength(1);
+			expect(targets[0].changedFiles).toEqual(['apps/server/features/inspections/index.ts']);
+		});
+
+		it('groups files across multi-watch entries that share the same capture', () => {
+			const mapping: MappingConfig = {
+				name: 'monorepo-features',
+				watch: ['apps/server/features/<FEATURE_NAME>/**', 'apps/client/features/<FEATURE_NAME>/**'],
+				readme: 'docs/wiki/<FEATURE_NAME>.md',
+			};
+			const files = ['apps/server/features/auth/index.ts', 'apps/client/features/auth/index.ts', 'apps/server/features/payment/index.ts'];
+			const targets = resolveMappingTargets(mapping, files, []);
+			expect(targets).toHaveLength(2);
+
+			const auth = targets.find((t) => t.captures.FEATURE_NAME === 'auth');
+			const payment = targets.find((t) => t.captures.FEATURE_NAME === 'payment');
+
+			expect(auth?.changedFiles).toEqual(['apps/server/features/auth/index.ts', 'apps/client/features/auth/index.ts']);
+			expect(payment?.changedFiles).toEqual(['apps/server/features/payment/index.ts']);
+		});
+
+		it('substitutes multiple placeholders into the target path', () => {
+			const mapping: MappingConfig = {
+				name: 'app-features',
+				watch: ['apps/<APP>/features/<FEATURE_NAME>/**'],
+				readme: 'docs/<APP>/<FEATURE_NAME>.md',
+			};
+			const files = ['apps/server/features/auth/index.ts', 'apps/client/features/auth/index.ts'];
+			const targets = resolveMappingTargets(mapping, files, []);
+			expect(targets).toHaveLength(2);
+
+			const paths = targets.map((t) => t.targetPath).toSorted();
+			expect(paths).toEqual(['docs/client/auth.md', 'docs/server/auth.md']);
+		});
+
+		it('uses default exclude patterns when mapping does not override', () => {
+			const files = ['apps/server/features/inspections/index.ts', 'apps/server/features/inspections/index.test.ts'];
+			const targets = resolveMappingTargets(baseMapping, files, ['**/*.test.ts']);
+			expect(targets).toHaveLength(1);
+			expect(targets[0].changedFiles).toEqual(['apps/server/features/inspections/index.ts']);
+		});
+
+		it('mapping-level exclude fully overrides default excludes', () => {
+			const mapping: MappingConfig = {
+				...baseMapping,
+				exclude: ['**/__snapshots__/**'],
+			};
+			const files = [
+				'apps/server/features/inspections/index.ts',
+				'apps/server/features/inspections/index.test.ts',
+				'apps/server/features/inspections/__snapshots__/x.snap',
+			];
+			const targets = resolveMappingTargets(mapping, files, ['**/*.test.ts']);
+			expect(targets).toHaveLength(1);
+			expect(targets[0].changedFiles).toEqual(['apps/server/features/inspections/index.ts', 'apps/server/features/inspections/index.test.ts']);
+		});
+
+		it('returns empty array when no files match', () => {
+			const targets = resolveMappingTargets(baseMapping, ['unrelated/file.ts'], []);
+			expect(targets).toEqual([]);
 		});
 	});
 });

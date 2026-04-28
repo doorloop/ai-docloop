@@ -1,6 +1,7 @@
 import normalizePath from 'normalize-path';
 
-import { PathScopeConfig } from '../types';
+import { MappingConfig, MappingTarget, PathScopeConfig } from '../types';
+import { compileWatchPattern, matchWatchPattern, substitutePlaceholders } from './glob-with-captures';
 import { logger } from './logger';
 
 const GLOB_PATTERN_SUFFIX = '/**';
@@ -106,4 +107,42 @@ export function mapFilesToDocRoots(files: string[], pathScopes: PathScopeConfig[
 	}
 
 	return docRootMap;
+}
+
+function captureKey(captures: Record<string, string>): string {
+	const entries = Object.entries(captures).toSorted(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
+	return JSON.stringify(entries);
+}
+
+export function resolveMappingTargets(mapping: MappingConfig, files: string[], defaultExcludes: readonly string[]): MappingTarget[] {
+	const compiledWatches = mapping.watch.map(compileWatchPattern);
+	const excludePatterns = mapping.exclude ?? defaultExcludes;
+	const compiledExcludes = excludePatterns.map(compileWatchPattern);
+
+	const groups = new Map<string, MappingTarget>();
+
+	for (const file of files) {
+		const normalizedFile = normalizeFilePath(file);
+		if (compiledExcludes.some((c) => c.regex.test(normalizedFile))) {
+			logger.debug(`File "${file}" excluded by mapping "${mapping.name}" exclude rule`);
+			continue;
+		}
+
+		for (const compiled of compiledWatches) {
+			const captures = matchWatchPattern(normalizedFile, compiled);
+			if (captures === null) continue;
+
+			const key = captureKey(captures);
+			let group = groups.get(key);
+			if (group === undefined) {
+				const targetPath = substitutePlaceholders(mapping.readme, captures);
+				group = { targetPath, captures, changedFiles: [] };
+				groups.set(key, group);
+			}
+			group.changedFiles.push(file);
+			break;
+		}
+	}
+
+	return Array.from(groups.values());
 }
