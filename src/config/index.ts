@@ -1,1 +1,1 @@
-export { getConfig } from './parser';
+export { getConfig, tryGetDocloopConfig } from './parser';

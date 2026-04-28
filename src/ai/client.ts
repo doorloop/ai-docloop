@@ -1,12 +1,17 @@
 import OpenAI, { ClientOptions } from 'openai';
 
 import { logger } from '../lib';
-import { ActionConfig, AiRequestContext, ReadmeStructure } from '../types';
+import { AiRequestContext, ReadmeStructure } from '../types';
 import { formatReadmeToMarkdown } from './formatter';
 import { buildPrompt } from './prompt';
 import { getReadmeSchema } from './schema';
 
-export async function generateReadme(ctx: AiRequestContext, cfg: ActionConfig): Promise<string> {
+interface AiClientConfig {
+	openaiApiKey: string;
+	openaiModel: string;
+}
+
+export async function generateReadme(ctx: AiRequestContext, cfg: AiClientConfig): Promise<string> {
 	const { system, user } = buildPrompt(ctx);
 
 	const clientOptions: ClientOptions = {
