@@ -1,7 +1,9 @@
+import { promises as fs } from 'node:fs';
+
 import * as core from '@actions/core';
 import * as github from '@actions/github';
 
-import { generateReadme } from './ai';
+import { generateMappingReadme, generateReadme } from './ai';
 import { getConfig, tryGetDocloopConfig } from './config';
 import { commitAndPush, getChangedFilesForMergedPr } from './git';
 import { buildPathScopeConfigs, logger, mapFilesToDocRoots, matchesGlob, resolveMappingTargets } from './lib';
@@ -180,11 +182,12 @@ async function runDocloop(cfg: DocloopConfig, token: string): Promise<void> {
 	logger.info(`Found ${changedFiles.length} changed file(s)`);
 
 	const openaiApiKey = core.getInput('openai_api_key', { required: true });
+	const promptCache = new Map<string, string>();
 	const updatedFiles: string[] = [];
 
 	for (const mapping of cfg.mappings) {
 		// eslint-disable-next-line no-await-in-loop
-		const filesForMapping = await processMapping(mapping, cfg, changedFiles, openaiApiKey, pr);
+		const filesForMapping = await processMapping(mapping, cfg, changedFiles, openaiApiKey, pr, promptCache);
 		updatedFiles.push(...filesForMapping);
 	}
 
@@ -199,12 +202,21 @@ async function runDocloop(cfg: DocloopConfig, token: string): Promise<void> {
 	await commitAndPush(updatedFiles, trigger.commitMessage, createPr, github.context, token);
 }
 
+async function loadPromptFile(filePath: string, cache: Map<string, string>): Promise<string> {
+	const cached = cache.get(filePath);
+	if (cached !== undefined) return cached;
+	const content = await fs.readFile(filePath, 'utf-8');
+	cache.set(filePath, content);
+	return content;
+}
+
 async function processMapping(
 	mapping: MappingConfig,
 	cfg: DocloopConfig,
 	changedFiles: string[],
 	openaiApiKey: string,
 	pr: NonNullable<typeof github.context.payload.pull_request>,
+	promptCache: Map<string, string>,
 ): Promise<string[]> {
 	const targets = resolveMappingTargets(mapping, changedFiles, cfg.defaults.exclude);
 	if (targets.length === 0) {
@@ -216,6 +228,17 @@ async function processMapping(
 	const onMissing = mapping.onMissingReadme ?? cfg.defaults.onMissingReadme;
 	const detailLevel = mapping.detailLevel ?? cfg.defaults.detailLevel;
 	const model = mapping.model ?? cfg.defaults.model;
+	const format = mapping.format ?? cfg.defaults.format;
+	const promptPath = mapping.prompt ?? cfg.prompt;
+
+	let userPrompt: string | undefined;
+	if (promptPath !== undefined) {
+		try {
+			userPrompt = await loadPromptFile(promptPath, promptCache);
+		} catch (error) {
+			throw new Error(`Failed to read prompt file "${promptPath}" for mapping "${mapping.name}"`, { cause: error });
+		}
+	}
 
 	const updatedFiles: string[] = [];
 
@@ -244,9 +267,13 @@ async function processMapping(
 			// Sequential awaits across targets keep us under OpenAI's per-minute
 			// request budget on smaller plans (same reason as the legacy path).
 			// eslint-disable-next-line no-await-in-loop
-			const content = await generateReadme(aiContext, { openaiApiKey, openaiModel: model });
+			const result = await generateMappingReadme(aiContext, { openaiApiKey, openaiModel: model }, { format, userPrompt });
+			if (result.kind === 'skip') {
+				logger.info(`Skipping ${target.targetPath}: ${result.reason}`);
+				continue;
+			}
 			// eslint-disable-next-line no-await-in-loop
-			const filePath = await writeReadmeAt(target.targetPath, content);
+			const filePath = await writeReadmeAt(target.targetPath, result.content);
 			updatedFiles.push(filePath);
 		} catch (error) {
 			logger.error(`Failed to generate README for ${target.targetPath}: ${error}`);

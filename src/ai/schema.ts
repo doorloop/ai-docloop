@@ -1,4 +1,4 @@
-type StructuredOutput = {
+export type StructuredOutput = {
 	type: 'json_schema';
 	json_schema: {
 		name: string;
@@ -63,6 +63,21 @@ const NOTES = {
 	description: 'Additional notes, best practices, or important considerations. Null when there are none.',
 } as const;
 
+const SHOULD_UPDATE = {
+	type: 'boolean',
+	description:
+		'True when the README should be updated based on the changed files; false when the changes are cosmetic, unrelated, or otherwise not worth reflecting in the README.',
+} as const;
+
+const UPDATE_REASON = {
+	type: 'string',
+	description: 'One short sentence. When should_update is true, the rationale for updating; when false, why no update is needed.',
+} as const;
+
+interface SchemaOptions {
+	readonly withUpdateSignal?: boolean;
+}
+
 function wrap(schema: Record<string, unknown>): StructuredOutput {
 	return {
 		type: 'json_schema',
@@ -74,7 +89,12 @@ function wrap(schema: Record<string, unknown>): StructuredOutput {
 	};
 }
 
-export function getReadmeSchema(detailLevel: 'low' | 'medium' | 'high'): StructuredOutput {
+export function getReadmeSchema(detailLevel: 'low' | 'medium' | 'high', options?: SchemaOptions): StructuredOutput {
+	const withSignal = options?.withUpdateSignal === true;
+
+	const signalProps = withSignal ? { should_update: SHOULD_UPDATE, update_reason: UPDATE_REASON } : {};
+	const signalRequired = withSignal ? ['should_update', 'update_reason'] : [];
+
 	if (detailLevel === 'low') {
 		return wrap({
 			type: 'object',
@@ -83,8 +103,9 @@ export function getReadmeSchema(detailLevel: 'low' | 'medium' | 'high'): Structu
 				title: TITLE,
 				description: DESCRIPTION,
 				usage: USAGE,
+				...signalProps,
 			},
-			required: ['title', 'description', 'usage'],
+			required: ['title', 'description', 'usage', ...signalRequired],
 		});
 	}
 
@@ -98,8 +119,9 @@ export function getReadmeSchema(detailLevel: 'low' | 'medium' | 'high'): Structu
 				usage: USAGE,
 				features: FEATURES,
 				examples: EXAMPLES,
+				...signalProps,
 			},
-			required: ['title', 'description', 'usage', 'features', 'examples'],
+			required: ['title', 'description', 'usage', 'features', 'examples', ...signalRequired],
 		});
 	}
 
@@ -116,7 +138,8 @@ export function getReadmeSchema(detailLevel: 'low' | 'medium' | 'high'): Structu
 			api: API,
 			configuration: CONFIGURATION,
 			notes: NOTES,
+			...signalProps,
 		},
-		required: ['title', 'description', 'usage', 'features', 'examples', 'installation', 'api', 'configuration', 'notes'],
+		required: ['title', 'description', 'usage', 'features', 'examples', 'installation', 'api', 'configuration', 'notes', ...signalRequired],
 	});
 }

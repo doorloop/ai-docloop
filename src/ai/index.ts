@@ -1,1 +1,1 @@
-export { generateReadme } from './client';
+export { generateReadme, generateMappingReadme } from './client';
