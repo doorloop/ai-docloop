@@ -1,0 +1,65 @@
+# DocLoop AI — PR preview comment example (single-file `.docloop.yml`).
+#
+# Drop the YAML below at your repo root as `.docloop.yml`. Add the workflow
+# snippet shown in the header comment block to `.github/workflows/docloop.yml`.
+#
+# What this example demonstrates
+# ──────────────────────────────
+#   • pr_opened trigger with delivery: pr_comment. On every PR open /
+#     synchronize / reopen, the action posts a single comment on the PR
+#     showing the proposed README updates. Nothing is written to disk.
+#   • The same comment is rewritten in place on each subsequent push
+#     (de-duplicated by the <!-- docloop:summary --> signature) so the
+#     PR stays clean.
+#   • Pair this with pr_merged + delivery: pr (or direct_commit) in the
+#     same `.docloop.yml` for preview-during-review + write-on-merge —
+#     just add a second trigger block alongside pr_opened.
+#
+# Companion workflow file — copy to `.github/workflows/docloop.yml`
+# ──────────────────────────────────────────────────────────────────
+# Note the `types:` list — pr_opened needs all three of opened,
+# synchronize, and reopened to refresh the preview comment as the
+# PR evolves.
+#
+#   name: DocLoop preview
+#
+#   on:
+#       pull_request:
+#           types: [opened, synchronize, reopened]
+#
+#   jobs:
+#       preview:
+#           runs-on: ubuntu-latest
+#           permissions:
+#               contents: read         # pr_comment never writes to disk
+#               pull-requests: write   # to post / edit the preview comment
+#           steps:
+#               - uses: actions/checkout@v4
+#                 with:
+#                     token: ${{ secrets.GITHUB_TOKEN }}
+#                     fetch-depth: 0
+#               - uses: doorloop/ai-docloop@v1
+#                 with:
+#                     openai_api_key: ${{ secrets.OPENAI_API_KEY }}
+# ──────────────────────────────────────────────────────────────────
+
+version: 1
+
+defaults:
+    detail_level: medium
+    model: gpt-4o-mini
+    format: structured
+    on_missing_readme: create
+
+triggers:
+    pr_opened:
+        enabled: true
+        base_branches: ['main']
+        delivery: pr_comment
+        commit_message: '' # unused for pr_comment
+
+mappings:
+    - name: server-features
+      watch:
+          - apps/server/features/<FEATURE_NAME>/**
+      readme: docs/wiki/insights/<FEATURE_NAME>-feature.md
