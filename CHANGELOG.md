@@ -1,3 +1,13 @@
+# [1.11.0](https://github.com/doorloop/ai-docloop/compare/v1.10.3...v1.11.0) (2026-04-28)
+
+### Features
+
+- **ai:** user-directive prompt + freeform mode + should_update signal ([caa3568](https://github.com/doorloop/ai-docloop/commit/caa3568510e620badfb6f17de504eb8b2038d950))
+- **config:** load .docloop.yml when present ([a7f1476](https://github.com/doorloop/ai-docloop/commit/a7f14761f847b22bc1954d775400bc366105dabd))
+- **lib:** glob with captures + mapping target resolution ([6863d59](https://github.com/doorloop/ai-docloop/commit/6863d5943c45596d3b43aaf731c19ce375fc7ebb))
+- **orchestrator:** dispatcher with config-file path ([b5f93bc](https://github.com/doorloop/ai-docloop/commit/b5f93bc6c6e44e6aa008a005a3d5bd3fcab4c1d3))
+- **triggers:** pr_opened (pr_comment, pr_branch_commit) + workflow_dispatch ([3872a8a](https://github.com/doorloop/ai-docloop/commit/3872a8ac6b2909d4cbf7414d29a4a6864d83f656))
+
 ## [1.10.3](https://github.com/doorloop/ai-docloop/compare/v1.10.2...v1.10.3) (2026-04-26)
 
 ### Bug Fixes
