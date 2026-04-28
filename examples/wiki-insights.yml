@@ -4,7 +4,6 @@ prompt: docs/docloop/prompt.md
 
 defaults:
     detail_level: high
-    model: gpt-4o-mini
     format: freeform
     on_missing_readme: skip
     exclude:
@@ -17,7 +16,6 @@ defaults:
 
 triggers:
     pr_merged:
-        enabled: true
         base_branches: ['main']
         delivery: pr
         commit_message: 'docs: update feature insights [skip ci]'

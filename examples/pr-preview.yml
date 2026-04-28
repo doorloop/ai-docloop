@@ -1,17 +1,9 @@
 version: 1
 
-defaults:
-    detail_level: medium
-    model: gpt-4o-mini
-    format: structured
-    on_missing_readme: create
-
 triggers:
     pr_opened:
         enabled: true
         base_branches: ['main']
-        delivery: pr_comment
-        commit_message: ''
 
 mappings:
     - name: server-features
