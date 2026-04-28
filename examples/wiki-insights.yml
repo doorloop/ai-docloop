@@ -1,58 +1,5 @@
-# DocLoop AI — wiki-insights example (single-file `.docloop.yml`).
-#
-# Drop the YAML below at your repo root as `.docloop.yml`. Add the workflow
-# snippet shown in the header comment block to `.github/workflows/docloop.yml`.
-# Provide your own prompt MD file at `docs/docloop/prompt.md` (referenced by
-# the `prompt:` key) to give the model your editorial brief.
-#
-# What this example demonstrates
-# ──────────────────────────────
-#   • One canonical "feature page" per feature, generated from changes in
-#     either the server or the client side. Both watch globs share the
-#     <FEATURE_NAME> capture, so changes to apps/server/features/auth/**
-#     AND apps/client/features/auth/** fold into the same
-#     docs/wiki/insights/auth-feature.md page.
-#   • A repo-supplied prompt at docs/docloop/prompt.md as the PRIMARY
-#     directive for the model. The action's built-in operational
-#     boundaries are appended after — you own the editorial brief, the
-#     action owns the protocol.
-#   • format: freeform — the wiki-insights file format is custom (YAML
-#     frontmatter + six fixed sections + bullets with file:line citations),
-#     not the action's structured README schema. Freeform lets the prompt
-#     fully drive the output shape.
-#   • on_missing_readme: skip — new features bootstrap by hand. Auto-creating
-#     thin pages would dilute the directory's signal.
-#   • delivery: pr — README updates land in a separate "📚 docs" PR for
-#     review, not directly on main.
-#
-# Companion workflow file — copy to `.github/workflows/docloop.yml`
-# ──────────────────────────────────────────────────────────────────
-#   name: Update feature insights
-#
-#   on:
-#       pull_request:
-#           types: [closed]
-#
-#   jobs:
-#       update-insights:
-#           if: github.event.pull_request.merged == true
-#           runs-on: ubuntu-latest
-#           permissions:
-#               contents: write
-#               pull-requests: write
-#           steps:
-#               - uses: actions/checkout@v4
-#                 with:
-#                     token: ${{ secrets.GITHUB_TOKEN }}
-#                     fetch-depth: 0
-#               - uses: doorloop/ai-docloop@v1
-#                 with:
-#                     openai_api_key: ${{ secrets.OPENAI_API_KEY }}
-# ──────────────────────────────────────────────────────────────────
-
 version: 1
 
-# Repo-wide prompt. Each mapping inherits this unless it declares its own.
 prompt: docs/docloop/prompt.md
 
 defaults:
