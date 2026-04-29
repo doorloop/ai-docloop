@@ -15,7 +15,7 @@ import {
 	postOrUpdateMappingComment,
 	renderPreviewBody,
 } from './git';
-import { logger, resolveMappingTargets } from './lib';
+import { logger, resolveCandidatesByFrontmatter, resolveMappingTargets } from './lib';
 import { readReadmeIfExists, writeReadmeAt } from './readme';
 import { AiRequestContext, DocloopEvent, MappingIntent } from './types';
 
@@ -57,13 +57,13 @@ async function run(): Promise<void> {
 		const delivery = resolveDelivery(intent.delivery, event, github.context);
 		logger.info(`event=${event}, delivery=${delivery}`);
 
-		const candidateFiles = await listCandidateFiles(event, token);
-		if (candidateFiles.length === 0) {
+		const changedFiles = await listCandidateFiles(event, token);
+		if (changedFiles.length === 0) {
 			logger.info('No candidate files; nothing to do.');
 			return;
 		}
 
-		const targets = resolveMappingTargets(intent, candidateFiles);
+		const targets = await resolveTargets(intent, event, changedFiles);
 		if (targets.length === 0) {
 			logger.info(`No targets matched for mapping "${intent.name}"`);
 			if (delivery === 'pr_comment') {
@@ -112,6 +112,22 @@ async function run(): Promise<void> {
 		logger.setFailed(error instanceof Error ? error : String(error));
 		throw error;
 	}
+}
+
+async function resolveTargets(intent: MappingIntent, event: DocloopEvent, changedFiles: string[]): Promise<ReturnType<typeof resolveMappingTargets>> {
+	if (intent.readmeCandidates === undefined) {
+		return resolveMappingTargets(intent, changedFiles);
+	}
+	// `readmeCandidates` mode needs the full repo file list to expand the
+	// candidates glob. On workflow_dispatch we already enumerated all files;
+	// on PR events we only have the PR diff, so we list the repo separately.
+	const allRepoFiles = event === 'workflow_dispatch' ? changedFiles : await listAllRepoFiles();
+	return resolveCandidatesByFrontmatter({
+		intent,
+		candidatesGlob: intent.readmeCandidates,
+		allRepoFiles,
+		changedFiles,
+	});
 }
 
 async function listCandidateFiles(event: DocloopEvent, token: string): Promise<string[]> {

@@ -28,6 +28,10 @@ function captureKey(captures: Record<string, string>): string {
 }
 
 export function resolveMappingTargets(intent: MappingIntent, files: string[]): MappingTarget[] {
+	if (intent.readme === undefined) {
+		throw new Error('resolveMappingTargets called without intent.readme — this code path requires the placeholder-substitution mode');
+	}
+	const readme = intent.readme;
 	const compiledWatches = intent.watch.map(compileWatchPattern);
 	const compiledExcludes = intent.exclude.map(compileWatchPattern);
 
@@ -47,7 +51,7 @@ export function resolveMappingTargets(intent: MappingIntent, files: string[]): M
 			const key = captureKey(captures);
 			let group = groups.get(key);
 			if (group === undefined) {
-				const targetPath = substitutePlaceholders(intent.readme, captures);
+				const targetPath = substitutePlaceholders(readme, captures);
 				group = { targetPath, captures, changedFiles: [] };
 				groups.set(key, group);
 			}

@@ -11,7 +11,8 @@ export type DocloopEvent = 'pr_merged' | 'pr_open' | 'workflow_dispatch';
 export interface MappingIntent {
 	name: string;
 	watch: string[];
-	readme: string;
+	readme?: string;
+	readmeCandidates?: string;
 	promptFile?: string;
 	detailLevel: DetailLevel;
 	format: OutputFormat;
