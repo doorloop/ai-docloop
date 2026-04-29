@@ -19,6 +19,8 @@ export interface MappingIntent {
 	exclude: string[];
 	delivery?: DeliveryMode;
 	commitMessage: string;
+	prTitle?: string;
+	requestReviewFromPrAuthor: boolean;
 	openaiApiKey: string;
 	openaiModel: string;
 }

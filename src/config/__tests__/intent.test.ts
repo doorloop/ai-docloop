@@ -92,6 +92,8 @@ describe('getMappingIntent — defaults and overrides', () => {
 		expect(intent.delivery).toBeUndefined();
 		expect(intent.commitMessage).toBe('docs: update [skip ci]');
 		expect(intent.promptFile).toBeUndefined();
+		expect(intent.prTitle).toBeUndefined();
+		expect(intent.requestReviewFromPrAuthor).toBe(true);
 	});
 
 	it('honors all overrides', () => {
@@ -106,6 +108,8 @@ describe('getMappingIntent — defaults and overrides', () => {
 			on_missing_readme: 'skip',
 			delivery: 'pr',
 			commit_message: 'docs: regenerated [skip ci]',
+			pr_title: '📚 docs: update wiki insights',
+			request_review_from_pr_author: 'false',
 			name: 'server-features',
 		});
 		const intent = getMappingIntent();
@@ -116,7 +120,19 @@ describe('getMappingIntent — defaults and overrides', () => {
 		expect(intent.onMissingReadme).toBe('skip');
 		expect(intent.delivery).toBe('pr');
 		expect(intent.commitMessage).toBe('docs: regenerated [skip ci]');
+		expect(intent.prTitle).toBe('📚 docs: update wiki insights');
+		expect(intent.requestReviewFromPrAuthor).toBe(false);
 		expect(intent.name).toBe('server-features');
+	});
+
+	it('treats request_review_from_pr_author as a strict opt-out (only the literal "false" disables)', () => {
+		setInputs({
+			openai_api_key: 'k',
+			watch: 'apps/<F>/**',
+			readme: 'docs/<F>.md',
+			request_review_from_pr_author: 'no',
+		});
+		expect(getMappingIntent().requestReviewFromPrAuthor).toBe(true);
 	});
 
 	it('derives a name from watch + readme when name is not provided', () => {

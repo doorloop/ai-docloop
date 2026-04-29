@@ -103,6 +103,12 @@ export function getMappingIntent(): MappingIntent {
 
 	const commitMessage = core.getInput('commit_message').trim() || 'docs: update [skip ci]';
 
+	const prTitleRaw = core.getInput('pr_title').trim();
+	const prTitle = prTitleRaw.length > 0 ? prTitleRaw : undefined;
+
+	const requestReviewRaw = core.getInput('request_review_from_pr_author').trim().toLowerCase();
+	const requestReviewFromPrAuthor = requestReviewRaw !== 'false';
+
 	const nameRaw = core.getInput('name').trim();
 	const name = nameRaw.length > 0 ? nameRaw : deriveName(watch, readme);
 
@@ -117,6 +123,8 @@ export function getMappingIntent(): MappingIntent {
 		exclude,
 		delivery,
 		commitMessage,
+		prTitle,
+		requestReviewFromPrAuthor,
 		openaiApiKey,
 		openaiModel,
 	};

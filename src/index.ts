@@ -100,7 +100,14 @@ async function run(): Promise<void> {
 
 		const createPr = delivery === 'pr';
 		const baseBranchOverride = event === 'workflow_dispatch' ? resolveWorkflowDispatchBase() : undefined;
-		await commitAndPush(updatedFiles, intent.commitMessage, createPr, github.context, token, baseBranchOverride ? { baseBranchOverride } : undefined);
+		const sourcePrAuthor = github.context.payload.pull_request?.user?.login;
+		const requestReviewFromUser =
+			createPr && intent.requestReviewFromPrAuthor && typeof sourcePrAuthor === 'string' && sourcePrAuthor.length > 0 ? sourcePrAuthor : undefined;
+		await commitAndPush(updatedFiles, intent.commitMessage, createPr, github.context, token, {
+			baseBranchOverride,
+			prTitle: intent.prTitle,
+			requestReviewFromUser,
+		});
 	} catch (error) {
 		logger.setFailed(error instanceof Error ? error : String(error));
 		throw error;

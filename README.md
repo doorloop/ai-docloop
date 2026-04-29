@@ -116,21 +116,23 @@ Steps run sequentially in one job — no git contention. Each step is independen
 
 ## Inputs
 
-| Input               | Required | Default                       | Purpose                                                                                                           |
-| ------------------- | -------- | ----------------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| `openai_api_key`    | yes      | —                             | OpenAI API key (store in `secrets`).                                                                              |
-| `openai_model`      | no       | `gpt-4o-mini`                 | Model identifier.                                                                                                 |
-| `github_token`      | no       | `${{ github.token }}`         | Token for PR file lists, commits, PRs, and comments. Override only for cross-repo writes via PAT.                 |
-| `watch`             | yes      | —                             | One or more glob patterns (newline- or comma-separated). May contain `<PLACEHOLDER>` segments for fan-out.        |
-| `readme`            | yes      | —                             | Target documentation path. Any `<PLACEHOLDER>` here must be declared in `watch`.                                  |
-| `prompt_file`       | no       | —                             | Path to a Markdown file used as the model's primary directive.                                                    |
-| `detail_level`      | no       | `medium`                      | `low` \| `medium` \| `high`.                                                                                      |
-| `format`            | no       | `structured`                  | `structured` (JSON with `should_update`) or `freeform` (Markdown with the `<!-- docloop:no-update -->` sentinel). |
-| `on_missing_readme` | no       | `create`                      | `create` or `skip` — what to do when the target file does not exist.                                              |
-| `exclude`           | no       | —                             | Glob patterns to exclude from the watch set (newline- or comma-separated).                                        |
-| `delivery`          | no       | event-derived\*               | `direct_commit` \| `pr` \| `pr_comment` \| `pr_branch_commit`.                                                    |
-| `commit_message`    | no       | `docs: update [skip ci]`      | Used for `direct_commit`, `pr`, and `pr_branch_commit` deliveries.                                                |
-| `name`              | no       | derived from `watch`+`readme` | Mapping name; keys per-step PR-preview comments so multi-step workflows keep their comments idempotent.           |
+| Input                           | Required | Default                                  | Purpose                                                                                                                           |
+| ------------------------------- | -------- | ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `openai_api_key`                | yes      | —                                        | OpenAI API key (store in `secrets`).                                                                                              |
+| `openai_model`                  | no       | `gpt-4o-mini`                            | Model identifier.                                                                                                                 |
+| `github_token`                  | no       | `${{ github.token }}`                    | Token for PR file lists, commits, PRs, and comments. Override only for cross-repo writes via PAT.                                 |
+| `watch`                         | yes      | —                                        | One or more glob patterns (newline- or comma-separated). May contain `<PLACEHOLDER>` segments for fan-out.                        |
+| `readme`                        | yes      | —                                        | Target documentation path. Any `<PLACEHOLDER>` here must be declared in `watch`.                                                  |
+| `prompt_file`                   | no       | —                                        | Path to a Markdown file used as the model's primary directive.                                                                    |
+| `detail_level`                  | no       | `medium`                                 | `low` \| `medium` \| `high`.                                                                                                      |
+| `format`                        | no       | `structured`                             | `structured` (JSON with `should_update`) or `freeform` (Markdown with the `<!-- docloop:no-update -->` sentinel).                 |
+| `on_missing_readme`             | no       | `create`                                 | `create` or `skip` — what to do when the target file does not exist.                                                              |
+| `exclude`                       | no       | —                                        | Glob patterns to exclude from the watch set (newline- or comma-separated).                                                        |
+| `delivery`                      | no       | event-derived\*                          | `direct_commit` \| `pr` \| `pr_comment` \| `pr_branch_commit`.                                                                    |
+| `commit_message`                | no       | `docs: update [skip ci]`                 | Used for `direct_commit`, `pr`, and `pr_branch_commit` deliveries.                                                                |
+| `pr_title`                      | no       | `📚 docs: update READMEs via DocLoop AI` | Title for the docs PR opened when `delivery: pr`.                                                                                 |
+| `request_review_from_pr_author` | no       | `true`                                   | When `delivery: pr` fires from a merged PR, request a review on the docs PR from the source PR author. Set to `false` to disable. |
+| `name`                          | no       | derived from `watch`+`readme`            | Mapping name; keys per-step PR-preview comments so multi-step workflows keep their comments idempotent.                           |
 
 \* Default `delivery`: closed-merged PR → `direct_commit`; opened/synchronize/reopened PR → `pr_comment`; `workflow_dispatch` → `pr`.
 

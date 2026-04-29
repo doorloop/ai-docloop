@@ -23,6 +23,7 @@ function makeIntent(overrides: Partial<MappingIntent> = {}): MappingIntent {
 		onMissingReadme: 'create',
 		exclude: [],
 		commitMessage: 'docs: update [skip ci]',
+		requestReviewFromPrAuthor: true,
 		openaiApiKey: 'test-key',
 		openaiModel: 'gpt-4o-mini',
 		...overrides,
