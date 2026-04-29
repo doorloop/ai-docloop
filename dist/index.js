@@ -45817,7 +45817,7 @@ function ensurePlaceholderConsistency(watch, readme) {
 }
 function getMappingIntent() {
 	const openaiApiKey = getInput('openai_api_key', { required: true });
-	const openaiModel = getInput('openai_model').trim() || 'gpt-4o-mini';
+	const openaiModel = getInput('openai_model').trim() || 'gpt-5.5';
 	const watchRaw = getInput('watch', { required: true });
 	const watch = splitList(watchRaw);
 	if (watch.length === 0) {

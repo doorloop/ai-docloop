@@ -85,7 +85,7 @@ describe('getMappingIntent — defaults and overrides', () => {
 	it('applies defaults when optional knobs are unset', () => {
 		setInputs({ openai_api_key: 'k', watch: 'apps/<F>/**', readme: 'docs/<F>.md' });
 		const intent = getMappingIntent();
-		expect(intent.openaiModel).toBe('gpt-4o-mini');
+		expect(intent.openaiModel).toBe('gpt-5.5');
 		expect(intent.detailLevel).toBe('medium');
 		expect(intent.format).toBe('structured');
 		expect(intent.onMissingReadme).toBe('create');

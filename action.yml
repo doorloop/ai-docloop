@@ -8,9 +8,9 @@ inputs:
         description: 'OpenAI API key (should come from GitHub secrets).'
         required: true
     openai_model:
-        description: 'OpenAI model identifier (e.g. gpt-4o-mini, gpt-4o, gpt-4-turbo).'
+        description: 'OpenAI model identifier (e.g. gpt-5.5, gpt-5.1, gpt-5, gpt-4o, gpt-4o-mini). Override if your OpenAI project does not have access to the default.'
         required: false
-        default: 'gpt-4o-mini'
+        default: 'gpt-5.5'
     github_token:
         description: 'GitHub token used to read PR files and to push commits / open PRs / post comments. Defaults to the workflow-provided token.'
         required: false

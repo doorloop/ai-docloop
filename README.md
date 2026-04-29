@@ -119,7 +119,7 @@ Steps run sequentially in one job — no git contention. Each step is independen
 | Input               | Required | Default                       | Purpose                                                                                                           |
 | ------------------- | -------- | ----------------------------- | ----------------------------------------------------------------------------------------------------------------- |
 | `openai_api_key`    | yes      | —                             | OpenAI API key (store in `secrets`).                                                                              |
-| `openai_model`      | no       | `gpt-4o-mini`                 | Model identifier.                                                                                                 |
+| `openai_model`      | no       | `gpt-5.5`                     | Model identifier. Override if your OpenAI project does not have access to the default.                            |
 | `github_token`      | no       | `${{ github.token }}`         | Token for PR file lists, commits, PRs, and comments. Override only for cross-repo writes via PAT.                 |
 | `watch`             | yes      | —                             | One or more glob patterns (newline- or comma-separated). May contain `<PLACEHOLDER>` segments for fan-out.        |
 | `readme`            | yes      | —                             | Target documentation path. Any `<PLACEHOLDER>` here must be declared in `watch`.                                  |

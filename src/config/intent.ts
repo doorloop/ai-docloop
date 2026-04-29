@@ -67,7 +67,7 @@ function ensurePlaceholderConsistency(watch: string[], readme: string): void {
 
 export function getMappingIntent(): MappingIntent {
 	const openaiApiKey = core.getInput('openai_api_key', { required: true });
-	const openaiModel = core.getInput('openai_model').trim() || 'gpt-4o-mini';
+	const openaiModel = core.getInput('openai_model').trim() || 'gpt-5.5';
 
 	const watchRaw = core.getInput('watch', { required: true });
 	const watch = splitList(watchRaw);
