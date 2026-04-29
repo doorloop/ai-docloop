@@ -1,3 +1,9 @@
+# [2.2.0](https://github.com/doorloop/ai-docloop/compare/v2.1.0...v2.2.0) (2026-04-29)
+
+### Features
+
+- add readme_candidates input for frontmatter-driven routing ([98e4850](https://github.com/doorloop/ai-docloop/commit/98e485053b6aba448010b99703ec7d2167a202d1))
+
 # [2.1.0](https://github.com/doorloop/ai-docloop/compare/v2.0.1...v2.1.0) (2026-04-29)
 
 ### Features
