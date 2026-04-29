@@ -46,6 +46,13 @@ inputs:
         description: 'Commit message used when delivery is direct_commit, pr, or pr_branch_commit.'
         required: false
         default: 'docs: update [skip ci]'
+    pr_title:
+        description: 'Title for the docs PR opened when delivery is `pr`. Defaults to "📚 docs: update READMEs via DocLoop AI".'
+        required: false
+    request_review_from_pr_author:
+        description: 'When delivery is `pr` and the action is triggered by a merged PR, request a review on the docs PR from the source PR author. Set to "false" to disable.'
+        required: false
+        default: 'true'
     name:
         description: 'Mapping name used to key PR-preview comments so multiple docloop steps in one workflow each maintain their own idempotent comment. Defaults to a value derived from `watch` and `readme`.'
         required: false

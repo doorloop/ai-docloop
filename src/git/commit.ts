@@ -51,6 +51,8 @@ function buildPrBody(opts: { sourcePrNumber: number | undefined; sourcePrTitle: 
 
 interface CommitAndPushOptions {
 	readonly baseBranchOverride?: string;
+	readonly prTitle?: string;
+	readonly requestReviewFromUser?: string;
 }
 
 export async function commitAndPush(
@@ -134,7 +136,7 @@ export async function commitAndPush(
 		const pr = await octokit.rest.pulls.create({
 			owner: context.repo.owner,
 			repo: context.repo.repo,
-			title: buildPrTitle(),
+			title: options?.prTitle ?? buildPrTitle(),
 			head: branchName,
 			base: baseBranch,
 			body: buildPrBody({
@@ -146,6 +148,21 @@ export async function commitAndPush(
 		});
 
 		logger.info(`Created PR #${pr.data.number}: ${pr.data.html_url}`);
+
+		if (options?.requestReviewFromUser) {
+			try {
+				await octokit.rest.pulls.requestReviewers({
+					owner: context.repo.owner,
+					repo: context.repo.repo,
+					pull_number: pr.data.number,
+					reviewers: [options.requestReviewFromUser],
+				});
+				logger.info(`Requested review from @${options.requestReviewFromUser} on PR #${pr.data.number}`);
+			} catch (error) {
+				const message = error instanceof Error ? error.message : String(error);
+				logger.warning(`Could not request review from @${options.requestReviewFromUser} on PR #${pr.data.number}: ${message}`);
+			}
+		}
 	} else {
 		// Direct push to the base branch (we're already on it post-rebase).
 		await exec('git', ['push', 'origin', baseBranch]);

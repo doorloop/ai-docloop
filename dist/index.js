@@ -45844,6 +45844,10 @@ function getMappingIntent() {
 	const deliveryRaw = getInput('delivery').trim();
 	const delivery = deliveryRaw.length > 0 ? parseEnum('delivery', deliveryRaw, DELIVERIES) : void 0;
 	const commitMessage = getInput('commit_message').trim() || 'docs: update [skip ci]';
+	const prTitleRaw = getInput('pr_title').trim();
+	const prTitle = prTitleRaw.length > 0 ? prTitleRaw : void 0;
+	const requestReviewRaw = getInput('request_review_from_pr_author').trim().toLowerCase();
+	const requestReviewFromPrAuthor = requestReviewRaw !== 'false';
 	const nameRaw = getInput('name').trim();
 	const name = nameRaw.length > 0 ? nameRaw : deriveName(watch, readme);
 	return {
@@ -45857,6 +45861,8 @@ function getMappingIntent() {
 		exclude,
 		delivery,
 		commitMessage,
+		prTitle,
+		requestReviewFromPrAuthor,
 		openaiApiKey,
 		openaiModel,
 	};
@@ -46031,7 +46037,7 @@ async function commitAndPush(updatedFiles, commitMessage, createPr, context3, to
 		const pr2 = await octokit.rest.pulls.create({
 			owner: context3.repo.owner,
 			repo: context3.repo.repo,
-			title: buildPrTitle(),
+			title: options?.prTitle ?? buildPrTitle(),
 			head: branchName,
 			base: baseBranch,
 			body: buildPrBody({
@@ -46042,6 +46048,20 @@ async function commitAndPush(updatedFiles, commitMessage, createPr, context3, to
 			}),
 		});
 		logger.info(`Created PR #${pr2.data.number}: ${pr2.data.html_url}`);
+		if (options?.requestReviewFromUser) {
+			try {
+				await octokit.rest.pulls.requestReviewers({
+					owner: context3.repo.owner,
+					repo: context3.repo.repo,
+					pull_number: pr2.data.number,
+					reviewers: [options.requestReviewFromUser],
+				});
+				logger.info(`Requested review from @${options.requestReviewFromUser} on PR #${pr2.data.number}`);
+			} catch (error2) {
+				const message = error2 instanceof Error ? error2.message : String(error2);
+				logger.warning(`Could not request review from @${options.requestReviewFromUser} on PR #${pr2.data.number}: ${message}`);
+			}
+		}
 	} else {
 		await exec('git', ['push', 'origin', baseBranch]);
 		logger.info(`Pushed changes directly to ${baseBranch}`);
@@ -46240,7 +46260,14 @@ async function run() {
 		}
 		const createPr = delivery === 'pr';
 		const baseBranchOverride = event === 'workflow_dispatch' ? resolveWorkflowDispatchBase() : void 0;
-		await commitAndPush(updatedFiles, intent.commitMessage, createPr, context2, token, baseBranchOverride ? { baseBranchOverride } : void 0);
+		const sourcePrAuthor = context2.payload.pull_request?.user?.login;
+		const requestReviewFromUser =
+			createPr && intent.requestReviewFromPrAuthor && typeof sourcePrAuthor === 'string' && sourcePrAuthor.length > 0 ? sourcePrAuthor : void 0;
+		await commitAndPush(updatedFiles, intent.commitMessage, createPr, context2, token, {
+			baseBranchOverride,
+			prTitle: intent.prTitle,
+			requestReviewFromUser,
+		});
 	} catch (error2) {
 		logger.setFailed(error2 instanceof Error ? error2 : String(error2));
 		throw error2;
