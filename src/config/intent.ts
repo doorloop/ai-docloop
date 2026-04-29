@@ -78,13 +78,28 @@ export function getMappingIntent(): MappingIntent {
 		assertPathSafe('watch', pattern);
 	}
 
-	const readme = core.getInput('readme', { required: true }).trim();
-	if (readme.length === 0) {
-		throw new InputError('input "readme" must not be empty');
-	}
-	assertPathSafe('readme', readme);
+	const readmeRaw = core.getInput('readme').trim();
+	const readme = readmeRaw.length > 0 ? readmeRaw : undefined;
+	const readmeCandidatesRaw = core.getInput('readme_candidates').trim();
+	const readmeCandidates = readmeCandidatesRaw.length > 0 ? readmeCandidatesRaw : undefined;
 
-	ensurePlaceholderConsistency(watch, readme);
+	if (readme === undefined && readmeCandidates === undefined) {
+		throw new InputError('exactly one of "readme" or "readme_candidates" must be set');
+	}
+	if (readme !== undefined && readmeCandidates !== undefined) {
+		throw new InputError('"readme" and "readme_candidates" are mutually exclusive — choose one');
+	}
+
+	if (readme !== undefined) {
+		assertPathSafe('readme', readme);
+		ensurePlaceholderConsistency(watch, readme);
+	}
+	if (readmeCandidates !== undefined) {
+		assertPathSafe('readme_candidates', readmeCandidates);
+		if (extractPlaceholderNames(readmeCandidates).length > 0) {
+			throw new InputError('input "readme_candidates" must not contain `<PLACEHOLDER>` segments — it is a static glob, not a substitution template');
+		}
+	}
 
 	const promptFileRaw = core.getInput('prompt_file').trim();
 	const promptFile = promptFileRaw.length > 0 ? promptFileRaw : undefined;
@@ -110,12 +125,13 @@ export function getMappingIntent(): MappingIntent {
 	const requestReviewFromPrAuthor = requestReviewRaw !== 'false';
 
 	const nameRaw = core.getInput('name').trim();
-	const name = nameRaw.length > 0 ? nameRaw : deriveName(watch, readme);
+	const name = nameRaw.length > 0 ? nameRaw : deriveName(watch, readme ?? readmeCandidates ?? '');
 
 	return {
 		name,
 		watch,
 		readme,
+		readmeCandidates,
 		promptFile,
 		detailLevel,
 		format,

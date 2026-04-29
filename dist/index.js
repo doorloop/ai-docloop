@@ -27598,7 +27598,7 @@ var require_tr46 = __commonJS({
 			TRANSITIONAL: 0,
 			NONTRANSITIONAL: 1,
 		};
-		function normalize(str2) {
+		function normalize2(str2) {
 			return str2
 				.split('\0')
 				.map(function (s2) {
@@ -27683,7 +27683,7 @@ var require_tr46 = __commonJS({
 			}
 			var error2 = false;
 			if (
-				normalize(label) !== label ||
+				normalize2(label) !== label ||
 				(label[3] === '-' && label[4] === '-') ||
 				label[0] === '-' ||
 				label[label.length - 1] === '-' ||
@@ -27710,7 +27710,7 @@ var require_tr46 = __commonJS({
 		}
 		function processing(domain_name, useSTD3, processing_option) {
 			var result = mapChars(domain_name, useSTD3, processing_option);
-			result.string = normalize(result.string);
+			result.string = normalize2(result.string);
 			var labels = result.string.split('.');
 			for (var i2 = 0; i2 < labels.length; ++i2) {
 				try {
@@ -33420,7 +33420,7 @@ var require_normalize_path = __commonJS({
 });
 
 // src/index.ts
-var import_node_fs2 = require('fs');
+var import_node_fs3 = require('fs');
 
 // node_modules/@actions/core/lib/command.js
 var os = __toESM(require('os'), 1);
@@ -45423,6 +45423,10 @@ function captureKey(captures) {
 	return JSON.stringify(entries);
 }
 function resolveMappingTargets(intent, files) {
+	if (intent.readme === void 0) {
+		throw new Error('resolveMappingTargets called without intent.readme \u2014 this code path requires the placeholder-substitution mode');
+	}
+	const readme = intent.readme;
 	const compiledWatches = intent.watch.map(compileWatchPattern);
 	const compiledExcludes = intent.exclude.map(compileWatchPattern);
 	const groups = /* @__PURE__ */ new Map();
@@ -45438,7 +45442,7 @@ function resolveMappingTargets(intent, files) {
 			const key = captureKey(captures);
 			let group = groups.get(key);
 			if (group === void 0) {
-				const targetPath = substitutePlaceholders(intent.readme, captures);
+				const targetPath = substitutePlaceholders(readme, captures);
 				group = { targetPath, captures, changedFiles: [] };
 				groups.set(key, group);
 			}
@@ -45447,6 +45451,162 @@ function resolveMappingTargets(intent, files) {
 		}
 	}
 	return Array.from(groups.values());
+}
+
+// src/lib/readme-candidates.ts
+var import_node_fs2 = require('fs');
+var import_normalize_path2 = __toESM(require_normalize_path());
+
+// src/lib/frontmatter.ts
+var FRONTMATTER_DELIMITER = '---';
+function parseFrontmatter(rawContent) {
+	const lines = rawContent.split('\n');
+	if (lines.length === 0 || lines[0].trim() !== FRONTMATTER_DELIMITER) {
+		return null;
+	}
+	let endIndex = -1;
+	for (let i2 = 1; i2 < lines.length; i2++) {
+		if (lines[i2].trim() === FRONTMATTER_DELIMITER) {
+			endIndex = i2;
+			break;
+		}
+	}
+	if (endIndex === -1) {
+		return null;
+	}
+	const block = lines.slice(1, endIndex);
+	let title;
+	const paths = [];
+	let inPaths = false;
+	for (const line of block) {
+		if (/^[A-Za-z_][A-Za-z0-9_]*:/.test(line)) {
+			inPaths = false;
+			const colon = line.indexOf(':');
+			const key = line.slice(0, colon).trim();
+			const value = line.slice(colon + 1).trim();
+			if (key === 'title') {
+				title = stripQuotes(value);
+				continue;
+			}
+			if (key === 'paths') {
+				inPaths = true;
+				if (value.length > 0 && value !== '[]') {
+					const inline = parseInlineList(value);
+					if (inline !== null) {
+						paths.push(...inline);
+						inPaths = false;
+					}
+				}
+			}
+			continue;
+		}
+		if (inPaths) {
+			const match = /^\s+-\s+(.+)$/.exec(line);
+			if (match) {
+				paths.push(stripQuotes(match[1].trim()));
+			}
+		}
+	}
+	return { title, paths };
+}
+function stripQuotes(value) {
+	if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+		return value.slice(1, -1);
+	}
+	return value;
+}
+function parseInlineList(value) {
+	if (!value.startsWith('[') || !value.endsWith(']')) {
+		return null;
+	}
+	const inner = value.slice(1, -1).trim();
+	if (inner.length === 0) return [];
+	return inner.split(',').map((s2) => stripQuotes(s2.trim()));
+}
+
+// src/lib/readme-candidates.ts
+var GLOB_SUFFIX = '/**';
+var RELATIVE_PREFIX = './';
+function normalize(path4) {
+	const n2 = (0, import_normalize_path2.default)(path4);
+	const stripped = n2.endsWith(GLOB_SUFFIX) ? n2.slice(0, -GLOB_SUFFIX.length) : n2;
+	return stripped.startsWith(RELATIVE_PREFIX) ? stripped.slice(RELATIVE_PREFIX.length) : stripped;
+}
+async function loadCandidate(filePath) {
+	let raw;
+	try {
+		raw = await import_node_fs2.promises.readFile(filePath, 'utf-8');
+	} catch (err) {
+		const message = err instanceof Error ? err.message : String(err);
+		logger.warning(`Could not read candidate "${filePath}": ${message}`);
+		return null;
+	}
+	const fm = parseFrontmatter(raw);
+	if (fm === null) {
+		logger.warning(`Skipping candidate "${filePath}": no YAML frontmatter`);
+		return null;
+	}
+	if (fm.paths.length === 0) {
+		logger.warning(`Skipping candidate "${filePath}": frontmatter has no \`paths:\` declaration`);
+		return null;
+	}
+	return { filePath, title: fm.title, ownedGlobs: fm.paths, existingReadme: raw };
+}
+function deriveFeatureName(filePath, title) {
+	if (title !== void 0 && title.length > 0) return title;
+	const slash = filePath.lastIndexOf('/');
+	const base = slash === -1 ? filePath : filePath.slice(slash + 1);
+	return base.replace(/\.md$/, '');
+}
+async function resolveCandidatesByFrontmatter(input) {
+	const { candidatesGlob, allRepoFiles, changedFiles, intent } = input;
+	const candidatesCompiled = compileWatchPattern(candidatesGlob);
+	const candidatePaths = allRepoFiles.filter((f2) => candidatesCompiled.regex.test(normalize(f2)));
+	if (candidatePaths.length === 0) {
+		logger.warning(`readme_candidates="${candidatesGlob}" matched no files in the repo`);
+		return [];
+	}
+	logger.info(`readme_candidates resolved ${candidatePaths.length} candidate file(s)`);
+	const resolved = [];
+	for (const filePath of candidatePaths) {
+		const candidate = await loadCandidate(filePath);
+		if (candidate !== null) {
+			resolved.push(candidate);
+		}
+	}
+	if (resolved.length === 0) {
+		logger.warning('No usable candidates after frontmatter parsing');
+		return [];
+	}
+	const compiledExcludes = intent.exclude.map(compileWatchPattern);
+	const eligibleChanged = changedFiles.filter((f2) => {
+		const n2 = normalize(f2);
+		if (compiledExcludes.some((c2) => c2.regex.test(n2))) {
+			logger.debug(`File "${f2}" excluded by mapping "${intent.name}" exclude rule`);
+			return false;
+		}
+		return true;
+	});
+	const targets = [];
+	for (const candidate of resolved) {
+		const ownedCompiled = candidate.ownedGlobs.map(compileWatchPattern);
+		const matched = eligibleChanged.filter((f2) => {
+			const n2 = normalize(f2);
+			return ownedCompiled.some((c2) => c2.regex.test(n2));
+		});
+		if (matched.length === 0) continue;
+		targets.push({
+			targetPath: candidate.filePath,
+			captures: { FEATURE_NAME: deriveFeatureName(candidate.filePath, candidate.title) },
+			changedFiles: matched,
+		});
+	}
+	if (targets.length === 0) {
+		logger.info(`No candidate's \`paths:\` matched any changed file (out of ${eligibleChanged.length} eligible)`);
+	} else {
+		logger.info(`Routed to ${targets.length} candidate(s) via frontmatter`);
+	}
+	return targets;
 }
 
 // src/ai/formatter.ts
@@ -45826,12 +45986,26 @@ function getMappingIntent() {
 	for (const pattern of watch) {
 		assertPathSafe('watch', pattern);
 	}
-	const readme = getInput('readme', { required: true }).trim();
-	if (readme.length === 0) {
-		throw new InputError('input "readme" must not be empty');
+	const readmeRaw = getInput('readme').trim();
+	const readme = readmeRaw.length > 0 ? readmeRaw : void 0;
+	const readmeCandidatesRaw = getInput('readme_candidates').trim();
+	const readmeCandidates = readmeCandidatesRaw.length > 0 ? readmeCandidatesRaw : void 0;
+	if (readme === void 0 && readmeCandidates === void 0) {
+		throw new InputError('exactly one of "readme" or "readme_candidates" must be set');
 	}
-	assertPathSafe('readme', readme);
-	ensurePlaceholderConsistency(watch, readme);
+	if (readme !== void 0 && readmeCandidates !== void 0) {
+		throw new InputError('"readme" and "readme_candidates" are mutually exclusive \u2014 choose one');
+	}
+	if (readme !== void 0) {
+		assertPathSafe('readme', readme);
+		ensurePlaceholderConsistency(watch, readme);
+	}
+	if (readmeCandidates !== void 0) {
+		assertPathSafe('readme_candidates', readmeCandidates);
+		if (extractPlaceholderNames(readmeCandidates).length > 0) {
+			throw new InputError('input "readme_candidates" must not contain `<PLACEHOLDER>` segments \u2014 it is a static glob, not a substitution template');
+		}
+	}
 	const promptFileRaw = getInput('prompt_file').trim();
 	const promptFile = promptFileRaw.length > 0 ? promptFileRaw : void 0;
 	if (promptFile !== void 0) {
@@ -45849,11 +46023,12 @@ function getMappingIntent() {
 	const requestReviewRaw = getInput('request_review_from_pr_author').trim().toLowerCase();
 	const requestReviewFromPrAuthor = requestReviewRaw !== 'false';
 	const nameRaw = getInput('name').trim();
-	const name = nameRaw.length > 0 ? nameRaw : deriveName(watch, readme);
+	const name = nameRaw.length > 0 ? nameRaw : deriveName(watch, readme ?? readmeCandidates ?? '');
 	return {
 		name,
 		watch,
 		readme,
+		readmeCandidates,
 		promptFile,
 		detailLevel,
 		format,
@@ -46224,12 +46399,12 @@ async function run() {
 		}
 		const delivery = resolveDelivery(intent.delivery, event, context2);
 		logger.info(`event=${event}, delivery=${delivery}`);
-		const candidateFiles = await listCandidateFiles(event, token);
-		if (candidateFiles.length === 0) {
+		const changedFiles = await listCandidateFiles(event, token);
+		if (changedFiles.length === 0) {
 			logger.info('No candidate files; nothing to do.');
 			return;
 		}
-		const targets = resolveMappingTargets(intent, candidateFiles);
+		const targets = await resolveTargets(intent, event, changedFiles);
 		if (targets.length === 0) {
 			logger.info(`No targets matched for mapping "${intent.name}"`);
 			if (delivery === 'pr_comment') {
@@ -46273,6 +46448,18 @@ async function run() {
 		throw error2;
 	}
 }
+async function resolveTargets(intent, event, changedFiles) {
+	if (intent.readmeCandidates === void 0) {
+		return resolveMappingTargets(intent, changedFiles);
+	}
+	const allRepoFiles = event === 'workflow_dispatch' ? changedFiles : await listAllRepoFiles();
+	return resolveCandidatesByFrontmatter({
+		intent,
+		candidatesGlob: intent.readmeCandidates,
+		allRepoFiles,
+		changedFiles,
+	});
+}
 async function listCandidateFiles(event, token) {
 	if (event === 'workflow_dispatch') {
 		const files2 = await listAllRepoFiles();
@@ -46289,7 +46476,7 @@ function resolveWorkflowDispatchBase() {
 async function loadPromptFile(filePath) {
 	if (filePath === void 0) return void 0;
 	try {
-		return await import_node_fs2.promises.readFile(filePath, 'utf-8');
+		return await import_node_fs3.promises.readFile(filePath, 'utf-8');
 	} catch (error2) {
 		throw new Error(`Failed to read prompt_file "${filePath}"`, { cause: error2 });
 	}

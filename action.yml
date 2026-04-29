@@ -19,8 +19,11 @@ inputs:
         description: 'One or more glob patterns (newline- or comma-separated) describing the source files this mapping watches. May contain `<PLACEHOLDER>` segments (e.g. `apps/server/features/<FEATURE_NAME>/**`); placeholders fan-out one step into N target READMEs.'
         required: true
     readme:
-        description: 'Target documentation file path. Any `<PLACEHOLDER>` used here must be declared in `watch`.'
-        required: true
+        description: 'Target documentation file path. Any `<PLACEHOLDER>` used here must be declared in `watch`. Mutually exclusive with `readme_candidates`; exactly one must be set.'
+        required: false
+    readme_candidates:
+        description: 'Glob pattern matching the candidate documentation files (e.g. `docs/wiki/insights/*-feature.md`). Each matched file must declare its owned source paths in YAML frontmatter under `paths:`. The action routes each changed source file to every candidate whose `paths:` covers it. Mutually exclusive with `readme`; exactly one must be set.'
+        required: false
     prompt_file:
         description: 'Optional path to a Markdown file used as the model''s primary directive. The action''s operational boundaries (return JSON / Markdown / how to signal "no update") are appended after.'
         required: false

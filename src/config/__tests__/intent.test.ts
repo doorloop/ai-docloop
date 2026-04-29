@@ -46,9 +46,33 @@ describe('getMappingIntent — required inputs', () => {
 		expect(() => getMappingIntent()).toThrow(/watch/);
 	});
 
-	it('throws when readme is missing', () => {
+	it('throws when both readme and readme_candidates are missing', () => {
 		setInputs({ openai_api_key: 'k', watch: 'apps/**' });
-		expect(() => getMappingIntent()).toThrow(/readme/);
+		expect(() => getMappingIntent()).toThrow(/exactly one/);
+	});
+
+	it('throws when both readme and readme_candidates are set', () => {
+		setInputs({ openai_api_key: 'k', watch: 'apps/<F>/**', readme: 'docs/<F>.md', readme_candidates: 'docs/insights/*-feature.md' });
+		expect(() => getMappingIntent()).toThrow(/mutually exclusive/);
+	});
+});
+
+describe('getMappingIntent — readme_candidates mode', () => {
+	it('accepts a static glob with no placeholders', () => {
+		setInputs({ openai_api_key: 'k', watch: 'apps/**', readme_candidates: 'docs/insights/*-feature.md' });
+		const intent = getMappingIntent();
+		expect(intent.readmeCandidates).toBe('docs/insights/*-feature.md');
+		expect(intent.readme).toBeUndefined();
+	});
+
+	it('rejects placeholders in readme_candidates', () => {
+		setInputs({ openai_api_key: 'k', watch: 'apps/<F>/**', readme_candidates: 'docs/<F>-feature.md' });
+		expect(() => getMappingIntent()).toThrow(/must not contain/);
+	});
+
+	it('does not require watch placeholders to match anything in readme_candidates', () => {
+		setInputs({ openai_api_key: 'k', watch: 'apps/server/<MODULE>/**', readme_candidates: 'docs/insights/*.md' });
+		expect(() => getMappingIntent()).not.toThrow();
 	});
 });
 
