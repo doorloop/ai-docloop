@@ -1,1 +1,1 @@
-export { buildDocRoots, readReadmeIfExists, writeReadme, writeReadmeAt } from './service';
+export { readReadmeIfExists, writeReadmeAt } from './service';

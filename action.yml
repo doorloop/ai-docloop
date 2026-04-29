@@ -1,54 +1,54 @@
 name: 'DocLoop AI'
-description: 'Automatically generate and update README files using AI when PRs are merged'
+description: 'Maintain documentation files using AI. One step = one mapping intent. Compose more by adding more steps.'
 branding:
     icon: 'book'
     color: 'blue'
 inputs:
-    base_branches:
-        description: 'Comma or newline separated list of base branch names that should trigger the action once PRs are merged into them. Example: "main,develop,release/*"'
+    openai_api_key:
+        description: 'OpenAI API key (should come from GitHub secrets).'
         required: true
-    path_scopes:
-        description: 'One or more glob-like path scopes (comma or newline separated) that define where we care about changes. Example: "apps/client/src/features/**,packages/ui/**"'
-        required: true
-    doc_root_depth_from_scope:
-        description: 'How many path segments below the scope root define a single doc root'
-        required: false
-        default: '1'
-    readme_filename:
-        description: 'Name of the file to create/update in each doc root'
-        required: false
-        default: 'README.md'
-    detail_level:
-        description: 'Controls how detailed the README should be'
-        required: false
-        default: 'medium'
     openai_model:
-        description: 'OpenAI model identifier (e.g., gpt-4o-mini, gpt-4o, gpt-4-turbo)'
+        description: 'OpenAI model identifier (e.g. gpt-4o-mini, gpt-4o, gpt-4-turbo).'
         required: false
         default: 'gpt-4o-mini'
-    openai_api_key:
-        description: 'OpenAI API key (should come from GitHub secrets)'
-        required: true
-    update_mode:
-        description: 'Whether to update existing README or overwrite it'
-        required: false
-        default: 'update'
-    commit_message:
-        description: 'Commit message used for the docs commit'
-        required: false
-        default: 'docs: update READMEs [skip ci]'
-    create_pr:
-        description: 'When true, create a PR instead of committing directly'
-        required: false
-        default: 'false'
     github_token:
-        description: 'GitHub token used to read PR files and to push commits / open PRs. Defaults to the workflow-provided token, which has the permissions granted by the calling job.'
+        description: 'GitHub token used to read PR files and to push commits / open PRs / post comments. Defaults to the workflow-provided token.'
         required: false
         default: ${{ github.token }}
-    config_file:
-        description: 'Path to an optional .docloop.yml that, when present, supplies the rich mapping/trigger/prompt config. When absent, the action falls back to the inputs above.'
+    watch:
+        description: 'One or more glob patterns (newline- or comma-separated) describing the source files this mapping watches. May contain `<PLACEHOLDER>` segments (e.g. `apps/server/features/<FEATURE_NAME>/**`); placeholders fan-out one step into N target READMEs.'
+        required: true
+    readme:
+        description: 'Target documentation file path. Any `<PLACEHOLDER>` used here must be declared in `watch`.'
+        required: true
+    prompt_file:
+        description: 'Optional path to a Markdown file used as the model''s primary directive. The action''s operational boundaries (return JSON / Markdown / how to signal "no update") are appended after.'
         required: false
-        default: '.docloop.yml'
+    detail_level:
+        description: 'Controls how detailed the generated content should be. One of: low, medium, high.'
+        required: false
+        default: 'medium'
+    format:
+        description: 'Output format. `structured` returns JSON with `should_update`/`update_reason`. `freeform` returns Markdown; the model signals "no update" with the literal `<!-- docloop:no-update -->` sentinel.'
+        required: false
+        default: 'structured'
+    on_missing_readme:
+        description: 'What to do when the target file does not exist. One of: create, skip.'
+        required: false
+        default: 'create'
+    exclude:
+        description: 'Glob patterns to exclude from the watch set (newline- or comma-separated).'
+        required: false
+    delivery:
+        description: 'How to deliver the generated content. One of: direct_commit, pr, pr_comment, pr_branch_commit. Default is event-derived: closed+merged → direct_commit; opened/synchronize/reopened → pr_comment; workflow_dispatch → pr.'
+        required: false
+    commit_message:
+        description: 'Commit message used when delivery is direct_commit, pr, or pr_branch_commit.'
+        required: false
+        default: 'docs: update [skip ci]'
+    name:
+        description: 'Mapping name used to key PR-preview comments so multiple docloop steps in one workflow each maintain their own idempotent comment. Defaults to a value derived from `watch` and `readme`.'
+        required: false
 runs:
     using: 'node20'
     main: 'dist/index.js'

@@ -3,10 +3,9 @@ import { getOctokit } from '@actions/github';
 
 import { logger } from '../lib/logger';
 
-const COMMENT_SIGNATURE = '<!-- docloop:summary -->';
+const SIGNATURE_PREFIX = '<!-- docloop:summary';
 
 export interface MappingPreview {
-	mappingName: string;
 	targetPath: string;
 	existing: string | undefined;
 	proposed: string;
@@ -14,14 +13,19 @@ export interface MappingPreview {
 	skipReason?: string;
 }
 
-export function renderPreviewBody(previews: MappingPreview[]): string {
-	const sections: string[] = [COMMENT_SIGNATURE, '## 📚 DocLoop AI — proposed README updates', ''];
+function buildSignature(mappingName: string): string {
+	const safe = mappingName.replace(/-->/g, '--&gt;');
+	return `${SIGNATURE_PREFIX}:${safe} -->`;
+}
+
+export function renderPreviewBody(mappingName: string, previews: MappingPreview[]): string {
+	const sections: string[] = [buildSignature(mappingName), `## 📚 DocLoop AI — proposed updates for \`${mappingName}\``, ''];
 
 	const updates = previews.filter((p) => !p.skip);
 	const skips = previews.filter((p) => p.skip);
 
 	if (updates.length === 0 && skips.length === 0) {
-		sections.push('No mappings matched the changed files in this PR.');
+		sections.push('No files in this PR matched this mapping.');
 		return sections.join('\n');
 	}
 
@@ -32,7 +36,7 @@ export function renderPreviewBody(previews: MappingPreview[]): string {
 		sections.push(`### ✏️ ${updates.length} update(s) suggested`);
 		sections.push('');
 		for (const preview of updates) {
-			sections.push(`#### \`${preview.targetPath}\` (mapping: \`${preview.mappingName}\`, ${preview.existing === undefined ? 'new file' : 'update'})`);
+			sections.push(`#### \`${preview.targetPath}\` (${preview.existing === undefined ? 'new file' : 'update'})`);
 			sections.push('');
 			sections.push('<details><summary>Proposed content</summary>');
 			sections.push('');
@@ -49,7 +53,7 @@ export function renderPreviewBody(previews: MappingPreview[]): string {
 		sections.push(`### 🟰 ${skips.length} target(s) skipped`);
 		sections.push('');
 		for (const preview of skips) {
-			sections.push(`- \`${preview.targetPath}\` (mapping: \`${preview.mappingName}\`) — ${preview.skipReason ?? 'no update needed'}`);
+			sections.push(`- \`${preview.targetPath}\` — ${preview.skipReason ?? 'no update needed'}`);
 		}
 		sections.push('');
 	}
@@ -57,12 +61,19 @@ export function renderPreviewBody(previews: MappingPreview[]): string {
 	return sections.join('\n');
 }
 
-export async function postOrUpdateMappingComment(prNumber: number, body: string, context: typeof github.context, token: string): Promise<void> {
+export async function postOrUpdateMappingComment(
+	mappingName: string,
+	prNumber: number,
+	body: string,
+	context: typeof github.context,
+	token: string,
+): Promise<void> {
 	const octokit = getOctokit(token);
 	const owner = context.repo.owner;
 	const repo = context.repo.repo;
+	const signature = buildSignature(mappingName);
 
-	const existing = await findExistingComment(octokit, owner, repo, prNumber);
+	const existing = await findExistingComment(octokit, owner, repo, prNumber, signature);
 
 	if (existing) {
 		await octokit.rest.issues.updateComment({
@@ -71,7 +82,7 @@ export async function postOrUpdateMappingComment(prNumber: number, body: string,
 			comment_id: existing.id,
 			body,
 		});
-		logger.info(`Updated DocLoop preview comment #${existing.id} on PR #${prNumber}`);
+		logger.info(`Updated DocLoop preview comment #${existing.id} for mapping "${mappingName}" on PR #${prNumber}`);
 		return;
 	}
 
@@ -81,10 +92,16 @@ export async function postOrUpdateMappingComment(prNumber: number, body: string,
 		issue_number: prNumber,
 		body,
 	});
-	logger.info(`Created DocLoop preview comment #${created.data.id} on PR #${prNumber}`);
+	logger.info(`Created DocLoop preview comment #${created.data.id} for mapping "${mappingName}" on PR #${prNumber}`);
 }
 
-async function findExistingComment(octokit: ReturnType<typeof getOctokit>, owner: string, repo: string, prNumber: number): Promise<{ id: number } | null> {
+async function findExistingComment(
+	octokit: ReturnType<typeof getOctokit>,
+	owner: string,
+	repo: string,
+	prNumber: number,
+	signature: string,
+): Promise<{ id: number } | null> {
 	let page = 1;
 	const perPage = 100;
 	while (true) {
@@ -99,7 +116,7 @@ async function findExistingComment(octokit: ReturnType<typeof getOctokit>, owner
 			page,
 		});
 		for (const comment of response.data) {
-			if (typeof comment.body === 'string' && comment.body.includes(COMMENT_SIGNATURE)) {
+			if (typeof comment.body === 'string' && comment.body.includes(signature)) {
 				return { id: comment.id };
 			}
 		}

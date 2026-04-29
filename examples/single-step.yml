@@ -1,11 +1,11 @@
-name: Update READMEs
+name: Maintain READMEs
 
 on:
     pull_request:
         types: [closed]
 
 jobs:
-    update-readmes:
+    docs:
         if: github.event.pull_request.merged == true
         runs-on: ubuntu-latest
         permissions:
@@ -16,10 +16,8 @@ jobs:
               with:
                   fetch-depth: 0
 
-            - uses: doorloop/ai-docloop@v1
+            - uses: doorloop/ai-docloop@v2
               with:
-                  base_branches: main,develop
-                  path_scopes: |
-                      src/features/**
-                      packages/**
                   openai_api_key: ${{ secrets.OPENAI_API_KEY }}
+                  watch: src/features/<FEATURE>/**
+                  readme: src/features/<FEATURE>/README.md

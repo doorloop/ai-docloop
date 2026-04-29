@@ -66,17 +66,13 @@ const NOTES = {
 const SHOULD_UPDATE = {
 	type: 'boolean',
 	description:
-		'True when the README should be updated based on the changed files; false when the changes are cosmetic, unrelated, or otherwise not worth reflecting in the README.',
+		'True when the document should be updated based on the changed files; false when the changes are cosmetic, unrelated, or otherwise not worth reflecting in the document.',
 } as const;
 
 const UPDATE_REASON = {
 	type: 'string',
 	description: 'One short sentence. When should_update is true, the rationale for updating; when false, why no update is needed.',
 } as const;
-
-interface SchemaOptions {
-	readonly withUpdateSignal?: boolean;
-}
 
 function wrap(schema: Record<string, unknown>): StructuredOutput {
 	return {
@@ -89,11 +85,9 @@ function wrap(schema: Record<string, unknown>): StructuredOutput {
 	};
 }
 
-export function getReadmeSchema(detailLevel: 'low' | 'medium' | 'high', options?: SchemaOptions): StructuredOutput {
-	const withSignal = options?.withUpdateSignal === true;
-
-	const signalProps = withSignal ? { should_update: SHOULD_UPDATE, update_reason: UPDATE_REASON } : {};
-	const signalRequired = withSignal ? ['should_update', 'update_reason'] : [];
+export function getReadmeSchema(detailLevel: 'low' | 'medium' | 'high'): StructuredOutput {
+	const signalProps = { should_update: SHOULD_UPDATE, update_reason: UPDATE_REASON };
+	const signalRequired = ['should_update', 'update_reason'];
 
 	if (detailLevel === 'low') {
 		return wrap({

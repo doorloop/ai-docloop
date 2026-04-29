@@ -61,19 +61,10 @@ function parseStructuredResponse(raw: string): ReadmeStructure {
 	}
 }
 
-export async function generateReadme(ctx: AiRequestContext, cfg: AiClientConfig): Promise<string> {
-	const { system, user } = buildPrompt(ctx);
-	const schema = getReadmeSchema(ctx.detailLevel);
-	const raw = await callOpenAI(system, user, cfg, schema);
-	const readme = parseStructuredResponse(raw);
-	return formatReadmeToMarkdown(readme);
-}
-
 export async function generateMappingReadme(ctx: AiRequestContext, cfg: AiClientConfig, options: GenerateOptions): Promise<GenerateResult> {
 	const { system, user } = buildPrompt(ctx, {
 		userPrompt: options.userPrompt,
 		format: options.format,
-		includeUpdateSignal: true,
 	});
 
 	if (options.format === 'freeform') {
@@ -85,7 +76,7 @@ export async function generateMappingReadme(ctx: AiRequestContext, cfg: AiClient
 		return { kind: 'update', content: raw };
 	}
 
-	const schema = getReadmeSchema(ctx.detailLevel, { withUpdateSignal: true });
+	const schema = getReadmeSchema(ctx.detailLevel);
 	const raw = await callOpenAI(system, user, cfg, schema);
 	const readme = parseStructuredResponse(raw);
 	if (readme.should_update === false) {

@@ -24,14 +24,14 @@ jobs:
                   token: ${{ secrets.GITHUB_TOKEN }}
                   fetch-depth: 0
 
-            - uses: doorloop/ai-docloop@v1
+            - uses: doorloop/ai-docloop@v2
               with:
-                  base_branches: main
-                  path_scopes: src/features/**
                   openai_api_key: ${{ secrets.OPENAI_API_KEY }}
+                  watch: src/features/<FEATURE>/**
+                  readme: src/features/<FEATURE>/README.md
 ```
 
-Add an `OPENAI_API_KEY` repository secret (Settings → Secrets and variables → Actions). On the next merged PR that touches files under `path_scopes`, the action will generate or update the README in the affected directories.
+Add an `OPENAI_API_KEY` repository secret (Settings → Secrets and variables → Actions). On the next merged PR that touches files under any feature, the action will generate or update that feature's README.
 
 See [README.md](./README.md#inputs) for the full input reference and monorepo examples.
 
@@ -66,7 +66,7 @@ bun run knip           # Detect unused exports/files/dependencies
 
 ### Releases
 
-This repo uses [semantic-release](./PUBLISHING.md). Just merge PRs with conventional-commit messages (`feat:`, `fix:`, `chore:`, `perf:`, `breaking:`) and a new version is published automatically.
+This repo uses [semantic-release](./PUBLISHING.md). Just merge PRs with conventional-commit messages (`feat:`, `fix:`, `chore:`, `perf:`, `feat!:`) and a new version is published automatically.
 
 ## Testing the action locally with `act`
 
@@ -122,4 +122,4 @@ bun run test:local -- --repo owner/repo --pr-number 123 --base-branch main
 - [README.md](./README.md) — full input reference and monorepo examples.
 - [TESTING.md](./TESTING.md) — detailed `act` setup.
 - [PUBLISHING.md](./PUBLISHING.md) — how releases work.
-- [`examples/`](./examples/) — copy-paste-ready setups: a basic flat v1 workflow (`docloop.yml`), a `.docloop.yml`-driven wiki-insights mapping (`wiki-insights.yml`), and a `pr_opened` preview-comment workflow (`pr-preview.yml`).
+- [`examples/`](./examples/) — copy-paste-ready setups: a single-step minimum (`single-step.yml`) and a multi-step composition (`wiki-insights.yml`).

@@ -147,13 +147,13 @@ jobs:
                   fetch-depth: 0
 
             - name: Run DocLoop AI
-              uses: doorloop/ai-docloop@v1 # Tracks the latest v1.x.y
+              if: github.event.pull_request.merged == true
+              uses: doorloop/ai-docloop@v2 # Tracks the latest v2.x.y
               with:
-                  base_branches: main
-                  path_scopes: src/features/**
-                  doc_root_depth_from_scope: 1
                   openai_api_key: ${{ secrets.OPENAI_API_KEY }}
-                  create_pr: false
+                  watch: src/features/<FEATURE>/**
+                  readme: src/features/<FEATURE>/README.md
+                  delivery: direct_commit
 ```
 
 ### Step 3: Test with a PR
@@ -164,13 +164,13 @@ jobs:
 
 ## Testing Tips
 
-1. **Start Small**: Test with a single path scope and simple changes first
-2. **Use `create_pr: true`**: This is safer for testing - you can review changes before merging
+1. **Start Small**: Test with a single mapping and simple changes first
+2. **Use `delivery: pr`**: This is safer for testing — you can review changes before merging
 3. **Check Logs**: GitHub Actions logs will show detailed information about what the action is doing
 4. **Test Edge Cases**:
     - PRs with no matching files
-    - PRs merged to non-matching branches
-    - PRs that don't match path scopes
+    - PRs merged to non-matching branches (gate via the workflow's `if:` block)
+    - PRs whose changed files don't match the watch pattern
 
 ## Troubleshooting
 

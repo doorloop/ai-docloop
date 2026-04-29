@@ -17,8 +17,6 @@ interface TestOptions {
 	repo: string;
 	prNumber: number;
 	baseBranch: string;
-	pathScopes?: string;
-	baseBranches?: string;
 	openaiApiKey?: string;
 }
 
@@ -45,8 +43,6 @@ Required:
   --base-branch       Base branch name
 
 Optional:
-  --path-scopes       Path scopes (default: "**")
-  --base-branches     Base branches (default: value of --base-branch)
   --openai-api-key    OpenAI API key (or set OPENAI_API_KEY env var)
     `);
 		process.exit(1);
