@@ -16,22 +16,14 @@ jobs:
             contents: write
             pull-requests: write
         steps:
-            - name: Checkout code
-              uses: actions/checkout@v4
+            - uses: actions/checkout@v4
               with:
-                  token: ${{ secrets.GITHUB_TOKEN }}
                   fetch-depth: 0
 
-            - name: Run DocLoop AI
-              uses: ./
+            - uses: ./
               with:
                   base_branches: main
                   path_scopes: src/**
-                  doc_root_depth_from_scope: 1
-                  readme_filename: README.md
-                  detail_level: medium
-                  openai_model: gpt-4o-mini
                   openai_api_key: ${{ secrets.OPENAI_API_KEY }}
-                  update_mode: update
                   commit_message: 'docs: update src/* READMEs [skip ci]'
                   create_pr: true
