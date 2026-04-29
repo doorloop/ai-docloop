@@ -1,3 +1,9 @@
+## [2.2.1](https://github.com/doorloop/ai-docloop/compare/v2.2.0...v2.2.1) (2026-04-29)
+
+### Bug Fixes
+
+- honor watch as a pre-filter in candidate-routing mode ([3ec5b23](https://github.com/doorloop/ai-docloop/commit/3ec5b23fa884afb91c1d2a195740fc25cb575432))
+
 # [2.2.0](https://github.com/doorloop/ai-docloop/compare/v2.1.0...v2.2.0) (2026-04-29)
 
 ### Features
