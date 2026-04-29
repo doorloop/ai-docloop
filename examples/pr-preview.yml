@@ -1,0 +1,12 @@
+version: 1
+
+triggers:
+    pr_opened:
+        enabled: true
+        base_branches: ['main']
+
+mappings:
+    - name: server-features
+      watch:
+          - apps/server/features/<FEATURE_NAME>/**
+      readme: docs/wiki/insights/<FEATURE_NAME>-feature.md

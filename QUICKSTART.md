@@ -122,4 +122,4 @@ bun run test:local -- --repo owner/repo --pr-number 123 --base-branch main
 - [README.md](./README.md) — full input reference and monorepo examples.
 - [TESTING.md](./TESTING.md) — detailed `act` setup.
 - [PUBLISHING.md](./PUBLISHING.md) — how releases work.
-- [`examples/`](./examples/) — copy-paste-ready setups: a basic flat v1 workflow (`docloop.yml`), a `.docloop.yml`-driven wiki-insights mapping (`wiki-insights/`), and a `pr_opened` preview-comment workflow (`pr-preview/`).
+- [`examples/`](./examples/) — copy-paste-ready setups: a basic flat v1 workflow (`docloop.yml`), a `.docloop.yml`-driven wiki-insights mapping (`wiki-insights.yml`), and a `pr_opened` preview-comment workflow (`pr-preview.yml`).
