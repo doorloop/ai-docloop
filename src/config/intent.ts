@@ -118,6 +118,9 @@ export function getMappingIntent(): MappingIntent {
 
 	const commitMessage = core.getInput('commit_message').trim() || 'docs: update [skip ci]';
 
+	const formatCommandRaw = core.getInput('format_command').trim();
+	const formatCommand = formatCommandRaw.length > 0 ? formatCommandRaw : undefined;
+
 	const prTitleRaw = core.getInput('pr_title').trim();
 	const prTitle = prTitleRaw.length > 0 ? prTitleRaw : undefined;
 
@@ -139,6 +142,7 @@ export function getMappingIntent(): MappingIntent {
 		exclude,
 		delivery,
 		commitMessage,
+		formatCommand,
 		prTitle,
 		requestReviewFromPrAuthor,
 		openaiApiKey,

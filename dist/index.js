@@ -45300,6 +45300,29 @@ var logger = {
 	setFailed: (message) => setFailed(message),
 };
 
+// src/lib/formatter.ts
+function shellQuote(value) {
+	const escaped = value.replace(/'/g, `'\\''`);
+	return `'${escaped}'`;
+}
+async function runFormatter(filePath, formatCommand) {
+	if (formatCommand === void 0) return;
+	const command = formatCommand.trim();
+	if (command.length === 0) return;
+	const fullCommand = `${command} ${shellQuote(filePath)}`;
+	try {
+		const exitCode = await exec('bash', ['-c', fullCommand], { ignoreReturnCode: true });
+		if (exitCode === 0) {
+			logger.info(`Formatted ${filePath} via "${command}"`);
+			return;
+		}
+		logger.warning(`format_command "${command}" exited ${exitCode} on ${filePath}; committing unformatted output.`);
+	} catch (err) {
+		const message = err instanceof Error ? err.message : String(err);
+		logger.warning(`format_command "${command}" threw on ${filePath}: ${message}; committing unformatted output.`);
+	}
+}
+
 // src/lib/path-mapper.ts
 var import_normalize_path = __toESM(require_normalize_path());
 
@@ -46023,6 +46046,8 @@ function getMappingIntent() {
 	const deliveryRaw = getInput('delivery').trim();
 	const delivery = deliveryRaw.length > 0 ? parseEnum('delivery', deliveryRaw, DELIVERIES) : void 0;
 	const commitMessage = getInput('commit_message').trim() || 'docs: update [skip ci]';
+	const formatCommandRaw = getInput('format_command').trim();
+	const formatCommand = formatCommandRaw.length > 0 ? formatCommandRaw : void 0;
 	const prTitleRaw = getInput('pr_title').trim();
 	const prTitle = prTitleRaw.length > 0 ? prTitleRaw : void 0;
 	const requestReviewRaw = getInput('request_review_from_pr_author').trim().toLowerCase();
@@ -46041,6 +46066,7 @@ function getMappingIntent() {
 		exclude,
 		delivery,
 		commitMessage,
+		formatCommand,
 		prTitle,
 		requestReviewFromPrAuthor,
 		openaiApiKey,
@@ -46381,7 +46407,11 @@ async function readReadmeIfExists(filePath) {
 async function writeReadmeAt(filePath, content) {
 	const dir = (0, import_path2.dirname)(filePath);
 	await import_fs4.promises.mkdir(dir, { recursive: true });
-	await import_fs4.promises.writeFile(filePath, content, 'utf-8');
+	const normalized = content.endsWith('\n')
+		? content
+		: `${content}
+`;
+	await import_fs4.promises.writeFile(filePath, normalized, 'utf-8');
 	logger.info(`Wrote README to ${filePath}`);
 	return filePath;
 }
@@ -46428,7 +46458,7 @@ async function run() {
 			logger.info('No README files were generated or updated');
 			return;
 		}
-		const updatedFiles = await writeOutputs(results.outputs);
+		const updatedFiles = await writeOutputs(results.outputs, intent.formatCommand);
 		if (delivery === 'pr_branch_commit') {
 			const pr2 = context2.payload.pull_request;
 			const headRef = pr2?.head?.ref;
@@ -46528,10 +46558,11 @@ async function runMapping(intent, targets, userPrompt, pr2) {
 	}
 	return { outputs, skips };
 }
-async function writeOutputs(outputs) {
+async function writeOutputs(outputs, formatCommand) {
 	const updatedFiles = [];
 	for (const output of outputs) {
 		const filePath = await writeReadmeAt(output.targetPath, output.proposed);
+		await runFormatter(filePath, formatCommand);
 		updatedFiles.push(filePath);
 	}
 	return updatedFiles;

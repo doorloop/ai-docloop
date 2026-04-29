@@ -49,6 +49,9 @@ inputs:
         description: 'Commit message used when delivery is direct_commit, pr, or pr_branch_commit.'
         required: false
         default: 'docs: update [skip ci]'
+    format_command:
+        description: 'Optional shell command to run on each generated file before commit (e.g. `bunx --no-install prettier --write` or `bun run format -- `). The generated file path is appended as the final argument. Failure is logged as a warning and does not fail the action — the unformatted file is still committed.'
+        required: false
     pr_title:
         description: 'Title for the docs PR opened when delivery is `pr`. Defaults to "📚 docs: update READMEs via DocLoop AI".'
         required: false
