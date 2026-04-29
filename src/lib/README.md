@@ -15,13 +15,14 @@ To utilize the 'lib' component, ensure that your configuration includes a 'watch
 
 ```yaml
 watch:
-  - apps/server/src/features/**
-  - apps/client/src/features/**
+    - apps/server/src/features/**
+    - apps/client/src/features/**
 candidates:
-  paths:
-    - apps/server/src/constants/cashPayments.ts
-    - apps/server/src/infrastructure/rabbitmq/definitions/embeddedFinancing/**
+    paths:
+        - apps/server/src/constants/cashPayments.ts
+        - apps/server/src/infrastructure/rabbitmq/definitions/embeddedFinancing/**
 ```
+
 In this setup, only changes within the specified watch paths will trigger documentation updates.
 
 ## Examples
