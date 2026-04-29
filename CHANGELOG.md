@@ -1,3 +1,9 @@
+## [2.0.1](https://github.com/doorloop/ai-docloop/compare/v2.0.0...v2.0.1) (2026-04-29)
+
+### Bug Fixes
+
+- trailing /\*\* must require ≥1 descendant segment ([2a4f7ff](https://github.com/doorloop/ai-docloop/commit/2a4f7ffac4c40d0f2be7a06d7fac083580c220f5))
+
 # [2.0.0](https://github.com/doorloop/ai-docloop/compare/v1.11.0...v2.0.0) (2026-04-29)
 
 - feat!: redesign action surface as flat per-step inputs (v2) ([375013d](https://github.com/doorloop/ai-docloop/commit/375013df89871cc769db5a21e80fee8fc839177d))
