@@ -4,12 +4,14 @@ Onboarding for Claude Code working in this repo. Loaded into every conversation 
 
 ## Project
 
-`doorloop/ai-docloop` is a published GitHub Action that auto-generates and updates README files in a consumer's repo when a PR merges, using OpenAI. Action runtime is Node 20; `dist/index.js` is the bundled entrypoint that GitHub Actions executes directly.
+`doorloop/ai-docloop` is a published GitHub Action that maintains documentation files in a consumer's repo using OpenAI. Each invocation is one **mapping intent** — `watch` (with optional `<PLACEHOLDER>` fan-out) → `readme` — expressed entirely as flat workflow inputs. There is no YAML config file; consumers compose multiple intents by adding more steps.
+
+Action runtime is Node 20; `dist/index.js` is the bundled entrypoint that GitHub Actions executes directly.
 
 ## Hard constraints — violating these breaks consumers or releases
 
 - **Action runtime is Node 20.** `action.yml` declares `using: node20`. The deployed action does not run on Bun. Do not change the runtime.
-- **`dist/index.js` is committed and self-contained.** tsup bundles with `noExternal` for the five runtime deps (`@actions/core`, `@actions/exec`, `@actions/github`, `openai`, `normalize-path`). Consumers do not run any install step — the file must be ready to execute as-is.
+- **`dist/index.js` is committed and self-contained.** tsup bundles with `noExternal` for the four runtime deps (`@actions/core`, `@actions/exec`, `@actions/github`, `openai`, `normalize-path`). Consumers do not run any install step — the file must be ready to execute as-is.
 - **Releases are entirely commit-driven.** semantic-release runs on every push to `main`, decides the version, updates `CHANGELOG.md`, rebuilds `dist/`, commits, tags `vX.Y.Z`, force-updates `v$MAJOR`, and creates the GitHub Release. There is no manual release flow.
 - **Bun is dev/CI-only.** Use it for `install`, `run`, `test`, scripts. The action itself never executes under Bun.
 - **`prepare` runs only `husky`.** Do not re-add `bun run build` to `prepare` — it would silently mutate committed `dist/` on every contributor's `bun install`.
@@ -41,13 +43,14 @@ Onboarding for Claude Code working in this repo. Loaded into every conversation 
 
 ## Architecture
 
-- `src/index.ts` — action entry; orchestrates the merged-PR → doc-roots → AI → write-and-commit pipeline.
-- `src/ai/` — OpenAI client, prompt construction, structured-output schema. Public surface: `generateReadme`.
-- `src/config/` — parses action inputs from `@actions/core` into `ActionConfig`.
-- `src/git/` — GitHub API (paginated `pulls.listFiles`) and git operations (commit + push or PR).
-- `src/lib/` — shared utilities: `logger`, glob → regex, path-scope → doc-root mapping.
-- `src/readme/` — README file ops (build doc roots, write to disk).
-- `src/types/` — shared types.
+- `src/index.ts` — action entry. Linear flow: read intent → detect event → list candidate files → resolve targets (placeholder fan-out) → call OpenAI per target → deliver.
+- `src/config/intent.ts` — reads flat action inputs into a single `MappingIntent`.
+- `src/event.ts` — `detectEvent` (PR closed-merged / PR open-sync-reopen / workflow_dispatch) and `resolveDelivery` (default-by-event, illegal-combo guard, fork auto-degrade).
+- `src/ai/` — OpenAI client, prompt construction, structured-output schema. Public surface: `generateMappingReadme`.
+- `src/git/` — GitHub API (paginated `pulls.listFiles`) and the three delivery primitives: `commitAndPush` (direct_commit / pr), `commitToBranch` (pr_branch_commit), and `postOrUpdateMappingComment` (pr_comment) keyed on `<!-- docloop:summary:<mappingName> -->`.
+- `src/lib/` — shared utilities: `logger`, glob-with-captures (placeholder compilation), and `resolveMappingTargets` which maps changed files to fan-out groups.
+- `src/readme/` — README file ops (`readReadmeIfExists`, `writeReadmeAt`).
+- `src/types/` — shared types. The hub type is `MappingIntent`.
 - `dist/index.js` — bundled output, committed, executed by the action runner.
 - `scripts/test-local.ts` — helper for the `act` local-testing flow.
 - `.husky/` — `pre-commit` runs lint-staged + knip; `commit-msg` runs commitlint.
@@ -62,7 +65,7 @@ Onboarding for Claude Code working in this repo. Loaded into every conversation 
     | ------------------------------------------------------ | -------------------------------- |
     | `chore:` `feat:`                                       | minor                            |
     | `fix:` `perf:`                                         | patch                            |
-    | `breaking:`                                            | major                            |
+    | `feat!:` / `fix!:` / `BREAKING CHANGE:` footer         | major                            |
     | `docs` `refactor` `test` `style` `build` `ci` `revert` | none — valid commits, no release |
 
 ## Workflow rules — DO
@@ -80,9 +83,9 @@ Onboarding for Claude Code working in this repo. Loaded into every conversation 
 - Don't `git push --force` to `main`. The `vX.Y.Z` tags and the moving `v$MAJOR` tag live there; force-pushing corrupts release history.
 - Don't rebuild `dist/` and commit it as part of a non-release change. CI rebuilds dist on every release; local rebuilds produce dist-diff noise on every PR.
 - Don't bypass hooks with `--no-verify`. If a hook fails, fix the cause.
-- Don't change `action.yml` inputs without bumping major (`breaking:`). Consumers pin to `@v1` and rely on input stability.
+- Don't change `action.yml` inputs without bumping major (`feat!:`). Consumers pin to `@v$MAJOR` and rely on input stability.
 - Don't reorder or remove plugins in `.releaserc.js` without understanding semantic-release. Plugin order is load-bearing (changelog must precede git).
-- Don't "fix" the five `// eslint-disable-next-line no-await-in-loop` comments in `src/git/files.ts`, `src/git/commit.ts`, and `src/index.ts`. They are intentional: paginated GitHub API, sequential git index access, OpenAI rate-limit avoidance — each carries a one-line reason at the call site.
+- Don't "fix" the `// eslint-disable-next-line no-await-in-loop` comments in `src/git/files.ts`, `src/git/commit.ts`, `src/git/branch-commit.ts`, `src/git/pr-comment.ts`, and `src/index.ts`. They are intentional: paginated GitHub API, sequential git-index access, OpenAI rate-limit avoidance — each carries a one-line reason at the call site.
 
 ## CI overview (`.github/workflows/`)
 
@@ -94,5 +97,5 @@ Onboarding for Claude Code working in this repo. Loaded into every conversation 
 ## Watch out for
 
 - The repo slug is `doorloop/ai-docloop`. Older history mistakenly references `doorloop/docloop-ai` — those are stale; use `ai-docloop` everywhere.
-- `bun-types` is wired via `tsconfig.json: types: ["bun"]`. If you add new test files, you don't need to import the test globals' types separately — they come from there.
-- The `release` script (`bun run release`) was removed during cleanup. Releases are CI-driven; there is no longer an interactive flow.
+- `bun-types` is wired via `tsconfig.json: types: ["bun"]`. New test files don't need to import test-globals types separately — they come from there.
+- `MappingIntent` is the single source-of-truth for one invocation; if you find yourself threading individual fields, prefer passing the intent.

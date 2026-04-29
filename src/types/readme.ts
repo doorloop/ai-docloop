@@ -1,10 +1,3 @@
-export interface DocRoot {
-	folderPath: string;
-	featureName: string;
-	changedFiles: string[];
-	existingReadme?: string;
-}
-
 export interface ReadmeStructure {
 	title: string;
 	description: string;

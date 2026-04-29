@@ -21,31 +21,19 @@ function asSchema(out: ReturnType<typeof getReadmeSchema>): SchemaShape {
 }
 
 describe('getReadmeSchema', () => {
-	it('returns three required fields at low detail level (no signal)', () => {
+	it('low detail returns the minimum content fields plus the update signal', () => {
 		const schema = asSchema(getReadmeSchema('low')).json_schema.schema;
-		expect(schema.required).toEqual(['title', 'description', 'usage']);
-		expect(Object.keys(schema.properties).toSorted()).toEqual(['description', 'title', 'usage']);
-	});
-
-	it('returns five required fields at medium detail level (no signal)', () => {
-		const schema = asSchema(getReadmeSchema('medium')).json_schema.schema;
-		expect(schema.required).toEqual(['title', 'description', 'usage', 'features', 'examples']);
-	});
-
-	it('returns nine required fields at high detail level (no signal)', () => {
-		const schema = asSchema(getReadmeSchema('high')).json_schema.schema;
-		expect(schema.required).toEqual(['title', 'description', 'usage', 'features', 'examples', 'installation', 'api', 'configuration', 'notes']);
-	});
-
-	it('appends should_update and update_reason when withUpdateSignal=true at low detail', () => {
-		const schema = asSchema(getReadmeSchema('low', { withUpdateSignal: true })).json_schema.schema;
 		expect(schema.required).toEqual(['title', 'description', 'usage', 'should_update', 'update_reason']);
-		expect(schema.properties.should_update).toMatchObject({ type: 'boolean' });
-		expect(schema.properties.update_reason).toMatchObject({ type: 'string' });
+		expect(Object.keys(schema.properties).toSorted()).toEqual(['description', 'should_update', 'title', 'update_reason', 'usage']);
 	});
 
-	it('appends should_update and update_reason at high detail too', () => {
-		const schema = asSchema(getReadmeSchema('high', { withUpdateSignal: true })).json_schema.schema;
+	it('medium detail adds features and examples', () => {
+		const schema = asSchema(getReadmeSchema('medium')).json_schema.schema;
+		expect(schema.required).toEqual(['title', 'description', 'usage', 'features', 'examples', 'should_update', 'update_reason']);
+	});
+
+	it('high detail adds installation/api/configuration/notes', () => {
+		const schema = asSchema(getReadmeSchema('high')).json_schema.schema;
 		expect(schema.required).toEqual([
 			'title',
 			'description',
@@ -62,8 +50,14 @@ describe('getReadmeSchema', () => {
 	});
 
 	it('keeps strict mode and additionalProperties: false', () => {
-		const schema = asSchema(getReadmeSchema('medium', { withUpdateSignal: true }));
+		const schema = asSchema(getReadmeSchema('medium'));
 		expect(schema.json_schema.strict).toBe(true);
 		expect(schema.json_schema.schema.additionalProperties).toBe(false);
+	});
+
+	it('models the update signal types correctly', () => {
+		const schema = asSchema(getReadmeSchema('low')).json_schema.schema;
+		expect(schema.properties.should_update).toMatchObject({ type: 'boolean' });
+		expect(schema.properties.update_reason).toMatchObject({ type: 'string' });
 	});
 });

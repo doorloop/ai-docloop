@@ -1,4 +1,4 @@
-import { DetailLevel, UpdateMode } from './config';
+import { DetailLevel } from './config';
 
 export interface AiRequestContext {
 	featureName: string;
@@ -7,5 +7,4 @@ export interface AiRequestContext {
 	prBody?: string;
 	changedFiles: string[];
 	existingReadme?: string;
-	updateMode: UpdateMode;
 }

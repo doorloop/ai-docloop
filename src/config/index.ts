@@ -1,1 +1,1 @@
-export { getConfig, tryGetDocloopConfig } from './parser';
+export { getMappingIntent } from './intent';

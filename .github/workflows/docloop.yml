@@ -22,8 +22,8 @@ jobs:
 
             - uses: ./
               with:
-                  base_branches: main
-                  path_scopes: src/**
                   openai_api_key: ${{ secrets.OPENAI_API_KEY }}
+                  watch: src/<MODULE>/**
+                  readme: src/<MODULE>/README.md
+                  delivery: pr
                   commit_message: 'docs: update src/* READMEs [skip ci]'
-                  create_pr: true

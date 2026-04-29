@@ -30,8 +30,7 @@ jobs:
             - name: Run DocLoop AI
               uses: ./
               with:
-                  base_branches: main
-                  path_scopes: src/**
-                  doc_root_depth_from_scope: 1
                   openai_api_key: ${{ secrets.OPENAI_API_KEY }}
-                  create_pr: false
+                  watch: src/<MODULE>/**
+                  readme: src/<MODULE>/README.md
+                  delivery: direct_commit
