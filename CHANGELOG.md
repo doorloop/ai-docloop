@@ -1,3 +1,9 @@
+# [2.4.0](https://github.com/doorloop/ai-docloop/compare/v2.3.0...v2.4.0) (2026-04-29)
+
+### Features
+
+- add format_command input + always emit trailing newline ([5b0bd2f](https://github.com/doorloop/ai-docloop/commit/5b0bd2fa7de49e3201076efc158733e17d289cbd))
+
 # [2.3.0](https://github.com/doorloop/ai-docloop/compare/v2.2.1...v2.3.0) (2026-04-29)
 
 ## [2.2.1](https://github.com/doorloop/ai-docloop/compare/v2.2.0...v2.2.1) (2026-04-29)
