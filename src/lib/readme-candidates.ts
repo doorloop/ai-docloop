@@ -86,12 +86,20 @@ export async function resolveCandidatesByFrontmatter(input: CandidateResolutionI
 		return [];
 	}
 
-	// Step 3: respect the intent's exclude list when matching changed files.
+	// Step 3: filter changed files by the intent's `watch` (must be in scope)
+	// and `exclude` (must not match). The watch acts as a pre-filter even in
+	// candidate mode so that a candidate's `paths:` claiming a path outside
+	// the workflow's stated scope of attention does not silently fire.
+	const compiledWatches = intent.watch.map(compileWatchPattern);
 	const compiledExcludes = intent.exclude.map(compileWatchPattern);
 	const eligibleChanged = changedFiles.filter((f) => {
 		const n = normalize(f);
 		if (compiledExcludes.some((c) => c.regex.test(n))) {
 			logger.debug(`File "${f}" excluded by mapping "${intent.name}" exclude rule`);
+			return false;
+		}
+		if (!compiledWatches.some((c) => c.regex.test(n))) {
+			logger.debug(`File "${f}" outside mapping "${intent.name}" watch scope`);
 			return false;
 		}
 		return true;
