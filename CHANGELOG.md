@@ -1,3 +1,9 @@
+# [2.1.0](https://github.com/doorloop/ai-docloop/compare/v2.0.1...v2.1.0) (2026-04-29)
+
+### Features
+
+- add pr_title input and auto-request review from source PR author ([904c7f4](https://github.com/doorloop/ai-docloop/commit/904c7f46b540c9b03469729e39e743f52ce95202))
+
 ## [2.0.1](https://github.com/doorloop/ai-docloop/compare/v2.0.0...v2.0.1) (2026-04-29)
 
 ### Bug Fixes
