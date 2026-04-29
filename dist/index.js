@@ -45364,7 +45364,7 @@ function compileWatchPattern(pattern) {
 	const globstarRe = new RegExp(GLOBSTAR_SENTINEL, 'g');
 	s2 = s2
 		.replace(new RegExp(`/${GLOBSTAR_SENTINEL}/`, 'g'), '(?:/.*)?/')
-		.replace(new RegExp(`/${GLOBSTAR_SENTINEL}$`), '(?:/.*)?')
+		.replace(new RegExp(`/${GLOBSTAR_SENTINEL}$`), '/.+')
 		.replace(new RegExp(`^${GLOBSTAR_SENTINEL}/`), '(?:.*/)?')
 		.replace(globstarRe, '.*');
 	s2 = s2.replace(new RegExp(SINGLESTAR_SENTINEL, 'g'), SINGLE_STAR);

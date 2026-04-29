@@ -45,12 +45,20 @@ describe('compileWatchPattern', () => {
 		expect(compiled.regex.test('apps/server/utils/main.ts')).toBe(false);
 	});
 
-	it('treats trailing /** as zero or more trailing segments', () => {
+	it('treats trailing /** as one or more trailing segments (does not match the parent itself)', () => {
 		const compiled = compileWatchPattern('apps/server/**');
-		expect(compiled.regex.test('apps/server')).toBe(true);
+		expect(compiled.regex.test('apps/server')).toBe(false);
 		expect(compiled.regex.test('apps/server/main.ts')).toBe(true);
 		expect(compiled.regex.test('apps/server/sub/dir/main.ts')).toBe(true);
 		expect(compiled.regex.test('apps/client/main.ts')).toBe(false);
+	});
+
+	it('does not match a flat file at the placeholder position (regression: src/<M>/** vs src/event.ts)', () => {
+		const compiled = compileWatchPattern('src/<MODULE>/**');
+		expect(compiled.regex.test('src/event.ts')).toBe(false);
+		expect(compiled.regex.test('src/lib/file.ts')).toBe(true);
+		const match = compiled.regex.exec('src/lib/file.ts');
+		expect(match?.groups?.MODULE).toBe('lib');
 	});
 
 	it('treats /**/ in the middle as zero or more middle segments', () => {
