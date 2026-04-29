@@ -81,7 +81,7 @@ Action runtime is Node 20; `dist/index.js` is the bundled entrypoint that GitHub
 
 - Don't push directly to `main` — every push triggers semantic-release; an unintended push can ship a surprise version.
 - Don't `git push --force` to `main`. The `vX.Y.Z` tags and the moving `v$MAJOR` tag live there; force-pushing corrupts release history.
-- Don't rebuild `dist/` and commit it as part of a non-release change. CI rebuilds dist on every release; local rebuilds produce dist-diff noise on every PR.
+- Don't rebuild `dist/` and commit it as part of a non-release change. CI rebuilds dist on every release; local rebuilds produce dist-diff noise on every PR. **Exception:** if the PR changes `action.yml` inputs OR fixes runtime behavior that the dogfood (`docloop.yml`) will exercise on the merge commit, you MUST `bun run build` and commit the rebuilt `dist/index.js` on the branch. The dogfood uses `uses: ./` and runs against the merge commit, which has whatever dist was on the branch — semantic-release rebuilds dist into a separate release commit that the dogfood will not see, so a stale dist on the merge commit will fail with the bug the PR is trying to fix (or with input-mismatch errors against a new `action.yml`).
 - Don't bypass hooks with `--no-verify`. If a hook fails, fix the cause.
 - Don't change `action.yml` inputs without bumping major (`feat!:`). Consumers pin to `@v$MAJOR` and rely on input stability.
 - Don't reorder or remove plugins in `.releaserc.js` without understanding semantic-release. Plugin order is load-bearing (changelog must precede git).
