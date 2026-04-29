@@ -45578,11 +45578,16 @@ async function resolveCandidatesByFrontmatter(input) {
 		logger.warning('No usable candidates after frontmatter parsing');
 		return [];
 	}
+	const compiledWatches = intent.watch.map(compileWatchPattern);
 	const compiledExcludes = intent.exclude.map(compileWatchPattern);
 	const eligibleChanged = changedFiles.filter((f2) => {
 		const n2 = normalize(f2);
 		if (compiledExcludes.some((c2) => c2.regex.test(n2))) {
 			logger.debug(`File "${f2}" excluded by mapping "${intent.name}" exclude rule`);
+			return false;
+		}
+		if (!compiledWatches.some((c2) => c2.regex.test(n2))) {
+			logger.debug(`File "${f2}" outside mapping "${intent.name}" watch scope`);
 			return false;
 		}
 		return true;

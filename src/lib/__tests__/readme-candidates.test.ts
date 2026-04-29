@@ -37,7 +37,7 @@ async function writeFile(rel: string, content: string): Promise<string> {
 function makeIntent(overrides: Partial<MappingIntent> = {}): MappingIntent {
 	return {
 		name: 'test',
-		watch: ['apps/server/src/features/<F>/**'],
+		watch: ['apps/**'],
 		readmeCandidates: 'docs/insights/*-feature.md',
 		detailLevel: 'medium',
 		format: 'freeform',
@@ -235,6 +235,51 @@ paths:
 			changedFiles: ['apps/server/anywhere.ts'],
 		});
 		expect(targets).toEqual([]);
+	});
+
+	it('pre-filters changed files by intent.watch — paths outside watch scope are dropped even when a candidate claims them', async () => {
+		const cwd = process.cwd();
+		try {
+			process.chdir(workspace);
+			await writeFile(
+				'docs/insights/cash-payments-feature.md',
+				`---
+title: Cash Payments
+paths:
+  - apps/server/src/features/cashPayments/**
+  - apps/server/src/constants/cashPayments.ts
+---
+`,
+			);
+
+			// Watch is narrow — only the features dir, NOT the constants file.
+			const intent = makeIntent({
+				watch: ['apps/server/src/features/**', 'apps/client/src/features/**'],
+			});
+
+			// A change to the constants file alone — claimed by the candidate's
+			// `paths:` but outside the watch scope. With the watch filter, no
+			// targets should be produced.
+			const targetsConstantsOnly = await resolveCandidatesByFrontmatter({
+				intent,
+				candidatesGlob: 'docs/insights/*-feature.md',
+				allRepoFiles: ['docs/insights/cash-payments-feature.md'],
+				changedFiles: ['apps/server/src/constants/cashPayments.ts'],
+			});
+			expect(targetsConstantsOnly).toEqual([]);
+
+			// A change inside the watch scope still routes correctly.
+			const targetsFeatureChange = await resolveCandidatesByFrontmatter({
+				intent,
+				candidatesGlob: 'docs/insights/*-feature.md',
+				allRepoFiles: ['docs/insights/cash-payments-feature.md'],
+				changedFiles: ['apps/server/src/features/cashPayments/cashPayments.service.ts'],
+			});
+			expect(targetsFeatureChange).toHaveLength(1);
+			expect(targetsFeatureChange[0].targetPath).toBe('docs/insights/cash-payments-feature.md');
+		} finally {
+			process.chdir(cwd);
+		}
 	});
 
 	it('returns empty when no candidate covers any changed file', async () => {
