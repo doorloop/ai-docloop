@@ -15,7 +15,7 @@ import {
 	postOrUpdateMappingComment,
 	renderPreviewBody,
 } from './git';
-import { logger, resolveCandidatesByFrontmatter, resolveMappingTargets } from './lib';
+import { logger, resolveCandidatesByFrontmatter, resolveMappingTargets, runFormatter } from './lib';
 import { readReadmeIfExists, writeReadmeAt } from './readme';
 import { AiRequestContext, DocloopEvent, MappingIntent } from './types';
 
@@ -86,7 +86,7 @@ async function run(): Promise<void> {
 			return;
 		}
 
-		const updatedFiles = await writeOutputs(results.outputs);
+		const updatedFiles = await writeOutputs(results.outputs, intent.formatCommand);
 
 		if (delivery === 'pr_branch_commit') {
 			const pr = github.context.payload.pull_request;
@@ -212,12 +212,16 @@ async function runMapping(
 	return { outputs, skips };
 }
 
-async function writeOutputs(outputs: MappingOutput[]): Promise<string[]> {
+async function writeOutputs(outputs: MappingOutput[], formatCommand: string | undefined): Promise<string[]> {
 	const updatedFiles: string[] = [];
 	for (const output of outputs) {
-		// Filesystem writes serialize to avoid mkdir races on shared parent dirs.
+		// Filesystem writes serialize to avoid mkdir races on shared parent dirs;
+		// the per-file format invocation that follows is also sequential to keep
+		// the formatter's own lockfile / cache happy.
 		// eslint-disable-next-line no-await-in-loop
 		const filePath = await writeReadmeAt(output.targetPath, output.proposed);
+		// eslint-disable-next-line no-await-in-loop
+		await runFormatter(filePath, formatCommand);
 		updatedFiles.push(filePath);
 	}
 	return updatedFiles;

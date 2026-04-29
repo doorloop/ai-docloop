@@ -46,6 +46,7 @@ Documentation rots the moment it ships. Every refactor, every renamed function, 
 - [🛣️ Routing modes](#-routing-modes)
     - [Placeholder fan-out](#placeholder-fan-out)
     - [Candidate routing (`readme_candidates`)](#candidate-routing-readme_candidates)
+- [🎨 Formatter compatibility](#-formatter-compatibility)
 - [✍️ Authoring prompts](#-authoring-prompts)
 - [🧪 The update signal](#-the-update-signal)
 - [🧱 Composing multiple intents](#-composing-multiple-intents)
@@ -113,24 +114,25 @@ A workflow is a flat list of mappings — one step per intent. Triggers come fro
 
 ## 📥 Inputs
 
-| Input                           | Required | Default                                  | Purpose                                                                                                                                                                                       |
-| ------------------------------- | -------- | ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `openai_api_key`                | yes      | —                                        | OpenAI API key (store in GitHub secrets).                                                                                                                                                     |
-| `openai_model`                  | no       | `gpt-4o-mini`                            | Model identifier. Override if your OpenAI project doesn't have access to the default.                                                                                                         |
-| `github_token`                  | no       | `${{ github.token }}`                    | Token for PR file lists, commits, PRs, and comments. Override only for cross-repo writes via PAT.                                                                                             |
-| `watch`                         | yes      | —                                        | One or more glob patterns (newline- or comma-separated). May contain `<PLACEHOLDER>` segments for fan-out.                                                                                    |
-| `readme`                        | yes\*    | —                                        | Target documentation path. Any `<PLACEHOLDER>` here must be declared in `watch`. Mutually exclusive with `readme_candidates`.                                                                 |
-| `readme_candidates`             | yes\*    | —                                        | Glob matching candidate docs whose YAML frontmatter declares the source paths each one owns. See [Candidate routing](#candidate-routing-readme_candidates). Mutually exclusive with `readme`. |
-| `prompt_file`                   | no       | —                                        | Path to a Markdown file used as the model's primary directive.                                                                                                                                |
-| `detail_level`                  | no       | `medium`                                 | `low` \| `medium` \| `high`.                                                                                                                                                                  |
-| `format`                        | no       | `structured`                             | `structured` (JSON with `should_update`) or `freeform` (Markdown with the `<!-- docloop:no-update -->` sentinel).                                                                             |
-| `on_missing_readme`             | no       | `create`                                 | `create` or `skip` — what to do when the target file does not exist.                                                                                                                          |
-| `exclude`                       | no       | —                                        | Glob patterns to exclude from the watch set (newline- or comma-separated).                                                                                                                    |
-| `delivery`                      | no       | event-derived†                           | `direct_commit` \| `pr` \| `pr_comment` \| `pr_branch_commit`.                                                                                                                                |
-| `commit_message`                | no       | `docs: update [skip ci]`                 | Used for `direct_commit`, `pr`, and `pr_branch_commit` deliveries.                                                                                                                            |
-| `pr_title`                      | no       | `📚 docs: update READMEs via DocLoop AI` | Title for the docs PR opened when `delivery: pr`.                                                                                                                                             |
-| `request_review_from_pr_author` | no       | `true`                                   | When `delivery: pr` fires from a merged PR, request a review on the docs PR from the source PR author. Set to `false` to disable.                                                             |
-| `name`                          | no       | derived from `watch`+`readme`            | Mapping name; keys per-step PR-preview comments so multi-step workflows keep their comments idempotent.                                                                                       |
+| Input                           | Required | Default                                  | Purpose                                                                                                                                                                                                   |
+| ------------------------------- | -------- | ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `openai_api_key`                | yes      | —                                        | OpenAI API key (store in GitHub secrets).                                                                                                                                                                 |
+| `openai_model`                  | no       | `gpt-4o-mini`                            | Model identifier. Override if your OpenAI project doesn't have access to the default.                                                                                                                     |
+| `github_token`                  | no       | `${{ github.token }}`                    | Token for PR file lists, commits, PRs, and comments. Override only for cross-repo writes via PAT.                                                                                                         |
+| `watch`                         | yes      | —                                        | One or more glob patterns (newline- or comma-separated). May contain `<PLACEHOLDER>` segments for fan-out.                                                                                                |
+| `readme`                        | yes\*    | —                                        | Target documentation path. Any `<PLACEHOLDER>` here must be declared in `watch`. Mutually exclusive with `readme_candidates`.                                                                             |
+| `readme_candidates`             | yes\*    | —                                        | Glob matching candidate docs whose YAML frontmatter declares the source paths each one owns. See [Candidate routing](#candidate-routing-readme_candidates). Mutually exclusive with `readme`.             |
+| `prompt_file`                   | no       | —                                        | Path to a Markdown file used as the model's primary directive.                                                                                                                                            |
+| `detail_level`                  | no       | `medium`                                 | `low` \| `medium` \| `high`.                                                                                                                                                                              |
+| `format`                        | no       | `structured`                             | `structured` (JSON with `should_update`) or `freeform` (Markdown with the `<!-- docloop:no-update -->` sentinel).                                                                                         |
+| `on_missing_readme`             | no       | `create`                                 | `create` or `skip` — what to do when the target file does not exist.                                                                                                                                      |
+| `exclude`                       | no       | —                                        | Glob patterns to exclude from the watch set (newline- or comma-separated).                                                                                                                                |
+| `delivery`                      | no       | event-derived†                           | `direct_commit` \| `pr` \| `pr_comment` \| `pr_branch_commit`.                                                                                                                                            |
+| `commit_message`                | no       | `docs: update [skip ci]`                 | Used for `direct_commit`, `pr`, and `pr_branch_commit` deliveries.                                                                                                                                        |
+| `format_command`                | no       | —                                        | Shell command run on each generated file before commit (e.g. `bunx --no-install prettier --write`). The path is appended as the final argument. See [Formatter compatibility](#-formatter-compatibility). |
+| `pr_title`                      | no       | `📚 docs: update READMEs via DocLoop AI` | Title for the docs PR opened when `delivery: pr`.                                                                                                                                                         |
+| `request_review_from_pr_author` | no       | `true`                                   | When `delivery: pr` fires from a merged PR, request a review on the docs PR from the source PR author. Set to `false` to disable.                                                                         |
+| `name`                          | no       | derived from `watch`+`readme`            | Mapping name; keys per-step PR-preview comments so multi-step workflows keep their comments idempotent.                                                                                                   |
 
 <sub>\* Exactly one of `readme` or `readme_candidates` must be set.</sub><br/>
 <sub>† Default `delivery`: closed-merged PR → `direct_commit`; opened/synchronize/reopened PR → `pr_comment`; `workflow_dispatch` → `pr`.</sub>
@@ -213,6 +215,35 @@ A changed source file must clear three gates to fire docloop:
 > Candidates that lack frontmatter or have an empty `paths:` array are skipped with a warning — the action never invents a routing target. Path-injection is impossible: the matched set is constrained to the glob expansion done at action time.
 
 ---
+
+## 🎨 Formatter compatibility
+
+The model generates Markdown freely. If your repo runs a strict Markdown formatter in CI (prettier, oxfmt, dprint, biome, …), the generated files can diverge from the expected style — typical complaints are missing trailing newlines, code-block indent choices, and table-column alignment. DocLoop ships two layers of help:
+
+**1. Trailing newline (always on).** The action always writes files with exactly one trailing newline. This alone resolves the most common formatter complaint across every popular Markdown formatter. No configuration needed.
+
+**2. `format_command` input (opt-in).** Tell the action which command formats files in your repo, and it'll run that command on each generated file before commit:
+
+```yaml
+- uses: doorloop/ai-docloop@v2
+  with:
+      ...
+      format_command: bunx --no-install prettier --write
+```
+
+The path of each generated file is appended as the final argument. Examples for common stacks:
+
+| Formatter          | `format_command`                         |
+| ------------------ | ---------------------------------------- |
+| prettier (npm/bun) | `bunx --no-install prettier --write`     |
+| prettier (pnpm)    | `pnpm exec prettier --write`             |
+| oxfmt              | `bunx --no-install oxfmt --write`        |
+| dprint             | `dprint fmt`                             |
+| biome              | `bunx --no-install biome format --write` |
+| Custom script      | `bun run format:file --`                 |
+
+> [!NOTE]
+> If the formatter is not installed or the command exits non-zero, the action logs a warning and commits the unformatted output anyway — a single-file format drift is a much smaller problem than a failed CI run.
 
 ## ✍️ Authoring prompts
 

@@ -43,23 +43,29 @@ describe('readReadmeIfExists', () => {
 });
 
 describe('writeReadmeAt', () => {
-	it('creates parent directories and writes the file', async () => {
+	it('creates parent directories and writes the file with a trailing newline', async () => {
 		const file = path.join(tempDir, 'docs', 'wiki', 'insights', 'feature.md');
 		await writeReadmeAt(file, '# feature\n\nbody');
 		const written = await fs.readFile(file, 'utf-8');
-		expect(written).toBe('# feature\n\nbody');
+		expect(written).toBe('# feature\n\nbody\n');
 	});
 
-	it('overwrites an existing file', async () => {
+	it('overwrites an existing file (and still appends the trailing newline)', async () => {
 		const file = path.join(tempDir, 'README.md');
 		await fs.writeFile(file, 'old');
 		await writeReadmeAt(file, 'new');
-		expect(await fs.readFile(file, 'utf-8')).toBe('new');
+		expect(await fs.readFile(file, 'utf-8')).toBe('new\n');
 	});
 
 	it('returns the written file path', async () => {
 		const file = path.join(tempDir, 'docs', 'feature.md');
 		const result = await writeReadmeAt(file, 'x');
 		expect(result).toBe(file);
+	});
+
+	it('does not duplicate the trailing newline when content already ends with one', async () => {
+		const file = path.join(tempDir, 'README.md');
+		await writeReadmeAt(file, '# already terminated\n');
+		expect(await fs.readFile(file, 'utf-8')).toBe('# already terminated\n');
 	});
 });
