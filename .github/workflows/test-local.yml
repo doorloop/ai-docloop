@@ -6,6 +6,13 @@ on:
 
 jobs:
     test:
+        # This workflow is for local `act` runs only. `act` sets `env.ACT=true`,
+        # so the job is a no-op on real GitHub Actions runs (the dogfood
+        # workflow `docloop.yml` already covers real-GitHub end-to-end testing).
+        # Without this guard the job would also run `bun run build`, which
+        # rewrites `dist/index.js` (tsup output isn't byte-identical), leaving
+        # the working tree dirty so the action's commit/rebase step fails.
+        if: ${{ env.ACT }}
         runs-on: ubuntu-latest
         permissions:
             contents: write
