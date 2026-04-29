@@ -1,3 +1,16 @@
+# [2.0.0](https://github.com/doorloop/ai-docloop/compare/v1.11.0...v2.0.0) (2026-04-29)
+
+- feat!: redesign action surface as flat per-step inputs (v2) ([375013d](https://github.com/doorloop/ai-docloop/commit/375013df89871cc769db5a21e80fee8fc839177d))
+
+### BREAKING CHANGES
+
+- `.docloop.yml`, the `config_file`/`config` inputs, and
+  the legacy flat inputs (`base_branches`, `path_scopes`,
+  `doc_root_depth_from_scope`, `readme_filename`, `update_mode`,
+  `create_pr`) are removed. Consumers must update their workflow to the new
+  input set and pin to `@v2`. The `yaml` runtime dependency is dropped;
+  `dist/index.js` shrinks ~270KB.
+
 # [1.11.0](https://github.com/doorloop/ai-docloop/compare/v1.10.3...v1.11.0) (2026-04-28)
 
 ### Features
