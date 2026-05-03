@@ -3,7 +3,7 @@ import OpenAI, { ClientOptions } from 'openai';
 import { logger } from '../lib';
 import { AiRequestContext, ReadmeStructure } from '../types';
 import { formatReadmeToMarkdown } from './formatter';
-import { buildPrompt } from './prompt';
+import { buildPrompt, NO_UPDATE_SENTINEL } from './prompt';
 import { getReadmeSchema, StructuredOutput } from './schema';
 
 interface AiClientConfig {
@@ -17,8 +17,6 @@ interface GenerateOptions {
 	readonly format: 'structured' | 'freeform';
 	readonly userPrompt?: string;
 }
-
-const NO_UPDATE_SENTINEL = '<!-- docloop:no-update -->';
 
 async function callOpenAI(system: string, user: string, cfg: AiClientConfig, responseFormat?: StructuredOutput): Promise<string> {
 	const clientOptions: ClientOptions = {
