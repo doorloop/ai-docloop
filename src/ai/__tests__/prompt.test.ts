@@ -57,4 +57,39 @@ describe('buildPrompt', () => {
 		expect(user).toContain('Please generate documentation for this feature/component.');
 		expect(user).not.toContain('Existing document');
 	});
+
+	it('omits the "please update" trailer when a userPrompt is provided alongside an existing document', () => {
+		const ctx: AiRequestContext = {
+			...baseCtx,
+			existingReadme: '# Inspections\n\nOld content.',
+		};
+		const { user } = buildPrompt(ctx, {
+			format: 'freeform',
+			userPrompt: 'Maintain the file per the rules above. Default to the no-update sentinel.',
+		});
+		expect(user).toContain('Existing document:');
+		expect(user).not.toContain('Please update this document');
+		expect(user).not.toContain('Please generate documentation for this feature/component.');
+	});
+
+	it('omits the "please generate" trailer when a userPrompt is provided without an existing document', () => {
+		const { user } = buildPrompt(baseCtx, {
+			format: 'freeform',
+			userPrompt: 'Maintain the file per the rules above. Default to the no-update sentinel.',
+		});
+		expect(user).not.toContain('Please generate documentation for this feature/component.');
+		expect(user).not.toContain('Please update this document');
+	});
+
+	it('keeps the boundaries block on the system prompt regardless of userPrompt', () => {
+		const withUserPrompt = buildPrompt(baseCtx, {
+			format: 'freeform',
+			userPrompt: 'Custom rules go here.',
+		});
+		const withoutUserPrompt = buildPrompt(baseCtx, { format: 'freeform' });
+		expect(withUserPrompt.system).toContain('automated GitHub Action');
+		expect(withUserPrompt.system).toContain('<!-- docloop:no-update -->');
+		expect(withoutUserPrompt.system).toContain('automated GitHub Action');
+		expect(withoutUserPrompt.system).toContain('<!-- docloop:no-update -->');
+	});
 });
