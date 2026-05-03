@@ -36,7 +36,7 @@ Guidelines:
 - When updating an existing document, preserve valuable information while incorporating new changes`;
 }
 
-function buildContextBlock(ctx: AiRequestContext): string {
+function buildContextBlock(ctx: AiRequestContext, hasCustomPrompt: boolean): string {
 	let block = `Generate documentation for the feature/component: **${ctx.featureName}**
 
 Detail Level: ${ctx.detailLevel}
@@ -53,8 +53,15 @@ ${ctx.changedFiles.map((f) => `- ${f}`).join('\n')}`;
 	}
 
 	if (ctx.existingReadme !== undefined) {
-		block += `\n\n---\n\nExisting document:\n\n${ctx.existingReadme}\n\n---\n\nPlease update this document to reflect the recent changes while preserving valuable existing information.`;
-	} else {
+		block += `\n\n---\n\nExisting document:\n\n${ctx.existingReadme}\n\n---`;
+		// A custom prompt_file already encodes the consumer's update policy
+		// (e.g. "default to the no-update sentinel"). Appending a generic
+		// "please update" cue would contradict it and bias the model away
+		// from the consumer's intent.
+		if (!hasCustomPrompt) {
+			block += '\n\nPlease update this document to reflect the recent changes while preserving valuable existing information.';
+		}
+	} else if (!hasCustomPrompt) {
 		block += '\n\nPlease generate documentation for this feature/component.';
 	}
 
@@ -87,6 +94,6 @@ export function buildPrompt(ctx: AiRequestContext, options: PromptOptions): { sy
 
 	return {
 		system: `${directive}\n\n---\n\n${boundaries}`,
-		user: buildContextBlock(ctx),
+		user: buildContextBlock(ctx, options.userPrompt !== undefined),
 	};
 }

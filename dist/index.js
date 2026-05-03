@@ -45713,7 +45713,7 @@ Guidelines:
 - Focus on helping developers understand and use the code effectively
 - When updating an existing document, preserve valuable information while incorporating new changes`;
 }
-function buildContextBlock(ctx) {
+function buildContextBlock(ctx, hasCustomPrompt) {
 	let block = `Generate documentation for the feature/component: **${ctx.featureName}**
 
 Detail Level: ${ctx.detailLevel}
@@ -45740,10 +45740,11 @@ Existing document:
 
 ${ctx.existingReadme}
 
----
-
-Please update this document to reflect the recent changes while preserving valuable existing information.`;
-	} else {
+---`;
+		if (!hasCustomPrompt) {
+			block += '\n\nPlease update this document to reflect the recent changes while preserving valuable existing information.';
+		}
+	} else if (!hasCustomPrompt) {
 		block += '\n\nPlease generate documentation for this feature/component.';
 	}
 	return block;
@@ -45776,7 +45777,7 @@ function buildPrompt(ctx, options) {
 ---
 
 ${boundaries}`,
-		user: buildContextBlock(ctx),
+		user: buildContextBlock(ctx, options.userPrompt !== void 0),
 	};
 }
 
