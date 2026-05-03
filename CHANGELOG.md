@@ -1,3 +1,9 @@
+# [2.5.0](https://github.com/doorloop/ai-docloop/compare/v2.4.0...v2.5.0) (2026-05-03)
+
+### Features
+
+- drop default user-message trailer when prompt_file is supplied ([25d737f](https://github.com/doorloop/ai-docloop/commit/25d737ff99c3d3abfb99d6920bd133becc6e7e74))
+
 # [2.4.0](https://github.com/doorloop/ai-docloop/compare/v2.3.0...v2.4.0) (2026-04-29)
 
 ### Features
